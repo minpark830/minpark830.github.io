@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Page not found · Minwoo Park</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<script>
+  try {
+    var saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") document.documentElement.setAttribute("data-theme", saved);
+  } catch (e) {}
+</script>
+<style>
+/* Same tokens as index.html. Paths are absolute because GitHub Pages serves
+   this page for any missing URL, at any depth. */
+:root {
+  --bg: #ffffff; --bg-2: #f1f4f6; --fg: #16202a; --fg-2: #46525e; --fg-3: #66717d; --rule: #d8dfe5;
+  --scr-bg: #0c1319; --scr-edge: #27333e; --scr-grid: #17222c; --scr-grid-2: #243240;
+  --scr-dim: #7f8e9b; --scr-green: #5ee391; --scr-magenta: #f06ee0; --scr-amber: #ffb24a;
+  --font-sans: "B612", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0f161c; --bg-2: #16212a; --fg: #e4eaef; --fg-2: #aab6c1; --fg-3: #8795a2; --rule: #25313b; --scr-bg: #080d12; --scr-edge: #2b3844; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0f161c; --bg-2: #16212a; --fg: #e4eaef; --fg-2: #aab6c1; --fg-3: #8795a2; --rule: #25313b; --scr-bg: #080d12; --scr-edge: #2b3844; color-scheme: dark; }
+@font-face { font-family: "B612"; src: url("/assets/fonts/b612-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "B612"; src: url("/assets/fonts/b612-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
+main { max-width: 720px; margin-inline: auto; padding-inline: 24px; padding-block: 12vh 64px; }
+.code { color: var(--fg-3); font-size: 15px; margin: 0; }
+h1 { font-size: clamp(34px, 6vw, 52px); line-height: 1.05; letter-spacing: -0.03em; margin: 8px 0 0; }
+p { color: var(--fg-2); max-width: 52ch; }
+.scope { margin: 32px 0 0; background: var(--scr-bg); border: 1px solid var(--scr-edge); border-radius: 12px; padding: 12px; }
+.scope svg { display: block; width: 100%; height: auto; }
+.cap { font-size: 13.5px; color: var(--fg-3); margin-top: 10px; }
+.cap b { color: var(--fg-2); }
+a.btn { display: inline-flex; align-items: center; height: 42px; padding: 0 18px; margin-top: 12px; border-radius: 6px; background: var(--fg); color: var(--bg); font-weight: 700; text-decoration: none; }
+a.btn:hover { background: var(--fg-2); }
+a:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="code">Error 404</p>
+  <h1>This page doesn't exist.</h1>
+  <p>The address may be mistyped, or the page may have moved. Everything on this site lives on the home page.</p>
+  <a class="btn" href="/">Go to the home page</a>
+  <figure class="scope" aria-hidden="true">
+    <svg viewBox="0 0 560 200" id="unstable">
+      <g style="stroke: var(--scr-grid)" stroke-width="1" fill="none">
+        <path d="M8 50H552M8 150H552M144 8V192M280 8V192M416 8V192"/>
+      </g>
+      <path d="M8 100H552" style="stroke: var(--scr-grid-2)" stroke-width="1"/>
+      <path d="M8 100H552" fill="none" style="stroke: var(--scr-magenta)" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <path id="osc" fill="none" style="stroke: var(--scr-amber)" stroke-width="2.2" stroke-linejoin="round"/>
+    </svg>
+  </figure>
+  <p class="cap"><b>Figure 404.</b> Loop unstable. The response grows with every cycle instead of settling.</p>
+</main>
+<script>
+  (function () {
+    var d = "", i, t, x, y;
+    for (i = 0; i <= 240; i++) {
+      t = i / 240 * 2.4;
+      x = 8 + 544 * i / 240;
+      y = 100 - Math.exp(1.25 * t) * Math.sin(2 * Math.PI * 1.9 * t) * 6;
+      y = Math.max(-20, Math.min(220, y));
+      d += (i ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1);
+    }
+    document.getElementById("osc").setAttribute("d", d);
+  })();
+</script>
+</body>
+</html>

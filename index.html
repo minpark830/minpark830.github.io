@@ -1,0 +1,1650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minwoo Park</title>
+<meta name="description" content="Minwoo Park is an embedded software and controls engineer finishing an M.S. in Electrical Engineering at the University of Pennsylvania. Servo control and trajectory planning at Varian; aerial robotics research in Penn's Kumar Lab.">
+<meta name="author" content="Minwoo Park">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f161c" media="(prefers-color-scheme: dark)">
+
+<!-- These URLs assume the site is published at https://minpark830.github.io/ (see README). -->
+<link rel="canonical" href="https://minpark830.github.io/">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="Minwoo Park">
+<meta property="og:title" content="Minwoo Park, embedded software and controls engineer">
+<meta property="og:description" content="Servo control and trajectory planning at Varian, aerial robotics research at Penn, and embedded C++ on real hardware. Includes a live PID servo you can tune.">
+<meta property="og:url" content="https://minpark830.github.io/">
+<meta property="og:image" content="https://minpark830.github.io/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Minwoo Park, embedded software and controls engineer, next to a servo step response that meets its requirements.">
+<meta property="profile:first_name" content="Minwoo">
+<meta property="profile:last_name" content="Park">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/b612-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/b612-700.woff2" as="font" type="font/woff2" crossorigin>
+
+<script>
+  // Apply a saved theme choice before first paint.
+  try {
+    var saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") document.documentElement.setAttribute("data-theme", saved);
+  } catch (e) {}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Minwoo Park",
+  "jobTitle": "Embedded Software and Controls Engineer",
+  "email": "mailto:mwpark@engineering.upenn.edu",
+  "url": "https://minpark830.github.io/",
+  "sameAs": [
+    "https://github.com/minpark830",
+    "https://www.linkedin.com/in/minwoo-park1/"
+  ],
+  "alumniOf": [
+    { "@type": "CollegeOrUniversity", "name": "University of Pennsylvania" },
+    { "@type": "CollegeOrUniversity", "name": "California Polytechnic State University, San Luis Obispo" }
+  ],
+  "knowsAbout": ["Embedded software", "C++", "Control systems", "Servo control", "Trajectory planning", "Kalman filtering", "Robotics", "FPGA design"]
+}
+</script>
+
+<style>
+/* Layout: documentation-style sections in a left-rail grid, under a hero whose
+   second row is a live instrument, a dark display beside a control panel.
+   Color is semantic and follows glass-cockpit convention:
+   cyan = values you can select, magenta = targets, green = measured / pass,
+   amber = caution / fail. Nothing is colored for decoration. */
+:root {
+  /* paper and ink */
+  --bg: #ffffff;
+  --bg-2: #f1f4f6;
+  --fg: #16202a;
+  --fg-2: #46525e;
+  --fg-3: #66717d;
+  --rule: #d8dfe5;
+  --fg-wash: rgba(22, 32, 42, 0.13);
+  /* semantic */
+  --sel: #0b6d8c;
+  --ok: #1b7f45;
+  --caution: #9a5a00;
+  --target: #a8267a;
+  /* the display (dark in both themes) */
+  --scr-bg: #0c1319;
+  --scr-edge: #27333e;
+  --scr-grid: #17222c;
+  --scr-grid-2: #243240;
+  --scr-fg: #d6dfe7;
+  --scr-dim: #7f8e9b;
+  --scr-green: #5ee391;
+  --scr-magenta: #f06ee0;
+  --scr-cmd: #9fb4c7;
+  --scr-amber: #ffb24a;
+  --scr-scrim: rgba(8, 13, 18, 0.62);
+  /* type */
+  --font-sans: "B612", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "B612 Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* sizes */
+  --wrap: 1160px;
+  --gutter: 24px;
+  --nav-h: 56px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f161c;
+    --bg-2: #16212a;
+    --fg: #e4eaef;
+    --fg-2: #aab6c1;
+    --fg-3: #8795a2;
+    --rule: #25313b;
+    --fg-wash: rgba(228, 234, 239, 0.14);
+    --sel: #62d0ee;
+    --ok: #5ee391;
+    --caution: #ffb24a;
+    --target: #f06ee0;
+    --scr-bg: #080d12;
+    --scr-edge: #2b3844;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f161c;
+  --bg-2: #16212a;
+  --fg: #e4eaef;
+  --fg-2: #aab6c1;
+  --fg-3: #8795a2;
+  --rule: #25313b;
+  --fg-wash: rgba(228, 234, 239, 0.14);
+  --sel: #62d0ee;
+  --ok: #5ee391;
+  --caution: #ffb24a;
+  --target: #f06ee0;
+  --scr-bg: #080d12;
+  --scr-edge: #2b3844;
+  color-scheme: dark;
+}
+
+@font-face { font-family: "B612"; src: url("assets/fonts/b612-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "B612"; src: url("assets/fonts/b612-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "B612"; src: url("assets/fonts/b612-400-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "B612 Mono"; src: url("assets/fonts/b612-mono-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "B612 Mono"; src: url("assets/fonts/b612-mono-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+
+/* ---------- base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.6 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3 { text-wrap: balance; }
+p, li { text-wrap: pretty; }
+a { color: var(--sel); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--sel); outline-offset: 3px; border-radius: 3px; }
+img, svg { max-width: 100%; }
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--gutter); }
+.num-t { font-variant-numeric: tabular-nums; }
+
+.skip {
+  position: absolute; left: 16px; top: -60px; z-index: 20;
+  background: var(--fg); color: var(--bg); padding: 10px 14px; border-radius: 6px;
+  font-weight: 700; text-decoration: none;
+}
+.skip:focus { top: calc(env(safe-area-inset-top, 0px) + 10px); }
+
+/* ---------- nav ---------- */
+.nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+}
+.nav-inner { display: flex; align-items: center; gap: 28px; height: var(--nav-h); }
+.brand { color: var(--fg); font-weight: 700; text-decoration: none; letter-spacing: -0.01em; white-space: nowrap; }
+.nav ul { display: flex; gap: 24px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+.nav ul a { color: var(--fg-2); text-decoration: none; font-size: 14.5px; padding-block: 6px; }
+.nav ul a:hover { color: var(--fg); }
+.nav ul a[aria-current="location"] {
+  color: var(--fg);
+  text-decoration: underline; text-decoration-color: var(--sel);
+  text-decoration-thickness: 2px; text-underline-offset: 8px;
+}
+.nav-resume {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+  border: 1px solid var(--rule); border-radius: 6px;
+  color: var(--fg); font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+.nav-resume:hover { border-color: var(--fg); }
+.theme-btn {
+  display: inline-grid; place-items: center; width: 32px; height: 32px;
+  border: 1px solid var(--rule); border-radius: 6px; background: transparent; color: var(--fg);
+  cursor: pointer; padding: 0; margin-left: -16px;
+}
+.theme-btn:hover { border-color: var(--fg); }
+.theme-btn svg { width: 16px; height: 16px; }
+
+/* ---------- hero ---------- */
+.hero { padding-block: 52px 8px; }
+.hero-top {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 32px 56px; align-items: end;
+}
+.hero-id, .hero-act { min-width: 0; }
+h1 {
+  font-size: clamp(46px, 6.6vw, 80px); line-height: 0.96; letter-spacing: -0.04em;
+  margin: 0; font-weight: 700;
+}
+.role { font-size: clamp(19px, 2.1vw, 24px); line-height: 1.3; color: var(--fg-2); margin: 14px 0 0; letter-spacing: -0.01em; }
+.intro { font-size: 17px; line-height: 1.6; max-width: 58ch; margin: 22px 0 0; }
+.avail { color: var(--fg-2); margin: 0; max-width: 44ch; }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 9px; height: 42px; padding: 0 18px;
+  border: 1px solid var(--fg); border-radius: 6px;
+  font: 700 15px/1 var(--font-sans); text-decoration: none; white-space: nowrap;
+}
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn-primary { background: var(--fg); color: var(--bg); }
+.btn-primary:hover { background: var(--fg-2); border-color: var(--fg-2); }
+.btn-secondary { background: transparent; color: var(--fg); }
+.btn-secondary:hover { background: var(--bg-2); }
+.links { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 16px 0 0; font-weight: 700; font-size: 15px; }
+
+/* ---------- Figure 1: the bench ---------- */
+.bench { margin: 44px 0 0; }
+.bench-grid {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 28px; align-items: start;
+}
+.scope {
+  min-width: 0;
+  background: var(--scr-bg); color: var(--scr-fg);
+  border: 1px solid var(--scr-edge); border-radius: 12px;
+  padding: 12px 12px 10px;
+}
+.annun {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--scr-grid-2); border-radius: 6px; margin-bottom: 10px;
+}
+.cell { min-width: 0; padding: 8px 10px 9px; display: grid; gap: 1px; }
+.cell + .cell { border-left: 1px solid var(--scr-grid-2); }
+.cell .lbl { font-size: 12px; color: var(--scr-dim); line-height: 1.35; }
+.cell .val { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.cell .num { font: 700 20px/1.25 var(--font-sans); color: var(--scr-fg); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cell .st { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.cell .st svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cell .lim { font-size: 11.5px; color: var(--scr-dim); line-height: 1.35; }
+.cell.pass .st { color: var(--scr-green); }
+.cell.fail .st, .cell.fail .num { color: var(--scr-amber); }
+.cell.pass .ic-fail, .cell.fail .ic-pass { display: none; }
+
+.plot { position: relative; }
+.plot svg { display: block; width: 100%; height: auto; }
+.plot .g1 { stroke: var(--scr-grid); stroke-width: 1; }
+.plot .g2 { stroke: var(--scr-grid-2); stroke-width: 1; }
+.plot .frame { fill: none; stroke: var(--scr-grid-2); stroke-width: 1; }
+.plot .ax { fill: var(--scr-dim); font: 400 11px var(--font-sans); font-variant-numeric: tabular-nums; }
+.plot .ax-name { font-size: 11px; }
+.plot .lim-line { stroke: var(--scr-dim); stroke-width: 1; stroke-dasharray: 2 3; }
+.plot .load-line { stroke: var(--scr-dim); stroke-width: 1; stroke-dasharray: 4 3; }
+.plot .tr-target { fill: none; stroke: var(--scr-magenta); stroke-width: 1.6; stroke-dasharray: 6 4; }
+.plot .tr-pos { fill: none; stroke: var(--scr-green); stroke-width: 2.2; stroke-linejoin: round; }
+.plot .tr-ghost { fill: none; stroke: var(--scr-green); stroke-width: 2; stroke-opacity: 0.3; stroke-linejoin: round; }
+.plot .tr-cmd { fill: none; stroke: var(--scr-cmd); stroke-width: 1.3; stroke-linejoin: round; }
+.plot .beam { fill: var(--scr-green); }
+.plot svg { overflow: hidden; }
+
+.scope-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; margin-top: 8px; align-items: baseline; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--scr-dim); }
+.lg { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.lg::before { content: ""; width: 18px; border-top: 2px solid; }
+.lg-target::before { border-top-style: dashed; border-color: var(--scr-magenta); }
+.lg-pos::before { border-color: var(--scr-green); }
+.lg-ghost::before { border-color: var(--scr-green); opacity: 0.35; }
+.lg-cmd::before { border-color: var(--scr-cmd); border-top-width: 1.5px; }
+.advice { font-size: 12.5px; font-weight: 700; color: var(--scr-amber); margin: 0; }
+.advice.ok { color: var(--scr-green); }
+
+.panel { min-width: 0; display: grid; gap: 18px; }
+.gains { border: 0; margin: 0; padding: 0; min-width: 0; }
+.gains legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
+.gain-row {
+  display: grid; grid-template-columns: 124px minmax(0, 1fr) 58px;
+  gap: 12px; align-items: center; min-height: 44px;
+}
+.gain-row label { display: flex; align-items: baseline; gap: 9px; white-space: nowrap; }
+.sym { font-size: 17px; font-weight: 700; }
+.sym i { font-style: italic; font-weight: 400; }
+.sym sub { font-size: 0.68em; font-weight: 700; }
+.gname { font-size: 13.5px; color: var(--fg-3); }
+.gain-row output { font: 700 16px var(--font-sans); color: var(--sel); text-align: right; font-variant-numeric: tabular-nums; }
+
+input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 32px; margin: 0;
+  background: transparent; cursor: pointer; --pct: 50%;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, var(--sel) 0 var(--pct), var(--rule) var(--pct) 100%);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 12px; height: 22px; margin-top: -9px;
+  border-radius: 3px; background: var(--bg); border: 2px solid var(--sel);
+}
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--rule); }
+input[type="range"]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--sel); }
+input[type="range"]::-moz-range-thumb { width: 8px; height: 18px; border-radius: 3px; background: var(--bg); border: 2px solid var(--sel); }
+input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+
+.opts { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
+.check { display: inline-flex; align-items: center; gap: 9px; font-size: 14.5px; cursor: pointer; }
+.check input { width: 17px; height: 17px; margin: 0; accent-color: var(--sel); }
+.btn-text {
+  font: 700 14px var(--font-sans); color: var(--fg); background: transparent;
+  border: 1px solid var(--rule); border-radius: 6px; height: 34px; padding: 0 14px; cursor: pointer;
+}
+.btn-text:hover { border-color: var(--fg); }
+
+.code { background: var(--bg-2); border: 1px solid var(--rule); border-radius: 8px; min-width: 0; }
+.code + .code { margin-top: 10px; }
+.code-head {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 7px 12px; border-bottom: 1px solid var(--rule);
+  font-size: 12px; color: var(--fg-3);
+}
+.code-head .file { font-weight: 700; color: var(--fg-2); }
+.code pre { margin: 0; padding: 10px 12px 12px; overflow-x: auto; font: 400 12.75px/1.65 var(--font-mono); tab-size: 2; }
+.code .k { font-weight: 700; }
+.code .c { color: var(--fg-3); }
+.code .s { color: var(--fg-2); }
+.code .n { color: var(--sel); font-weight: 700; }
+.source summary {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  font-weight: 700; font-size: 14.5px; color: var(--sel); list-style: none;
+}
+.source summary::-webkit-details-marker { display: none; }
+.source summary::before {
+  content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg); transition: transform 0.15s;
+}
+.source[open] summary::before { transform: rotate(45deg); }
+.source .when-open, .source[open] .when-closed { display: none; }
+.source[open] .when-open { display: inline; }
+.source > .code { margin-top: 12px; }
+
+.bench figcaption, .proj figcaption {
+  font-size: 13.5px; line-height: 1.55; color: var(--fg-3); margin-top: 14px; max-width: 86ch;
+}
+.bench figcaption b, .proj figcaption b { color: var(--fg-2); }
+
+/* ---------- sections ---------- */
+.section { padding-block: 88px 0; scroll-margin-top: calc(var(--nav-h) + 16px); }
+.sec-grid { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 40px; }
+.sec-head { min-width: 0; }
+.sec-head h2 {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--nav-h) + 24px);
+  font-size: 27px; line-height: 1.2; letter-spacing: -0.02em; margin: 0;
+}
+.sec-body { min-width: 0; }
+.prose { max-width: 760px; }
+
+.entry { padding-block: 24px; border-top: 1px solid var(--rule); }
+.entry:first-child { border-top: 0; padding-top: 2px; }
+.entry-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 20px; }
+.entry h3 { font-size: 19px; line-height: 1.35; margin: 0; letter-spacing: -0.01em; }
+.when { font-size: 14px; color: var(--fg-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.role-line { margin: 2px 0 0; color: var(--fg-2); }
+.entry ul { margin: 12px 0 0; padding-left: 20px; }
+.entry li { margin-top: 5px; }
+.entry li::marker { color: var(--fg-3); }
+.focus { margin: 12px 0 0; font-size: 14.5px; color: var(--fg-2); }
+.focus b { color: var(--fg); }
+
+.sub { font-size: 16px; margin: 48px 0 6px; letter-spacing: -0.005em; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows li {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 20px; padding-block: 14px; border-top: 1px solid var(--rule);
+}
+.rows li:first-child { border-top: 0; padding-top: 4px; }
+.rows .r-title { font-weight: 700; grid-column: 1; grid-row: 1; }
+.rows .when { grid-column: 2; grid-row: 1; text-align: right; }
+.rows .r-desc { grid-column: 1 / -1; grid-row: 2; color: var(--fg-2); max-width: 68ch; }
+
+/* projects: figures break out of the rail to the full width */
+.sec-lede { margin: 4px 0 0; color: var(--fg-2); max-width: 60ch; }
+.proj-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 48px; row-gap: 0; margin-top: 36px; }
+.offset { margin-left: calc(210px + 40px); max-width: 760px; }
+.proj { min-width: 0; padding-bottom: 64px; }
+/* Line up figure, heading, and body across each row of cards. */
+@supports (grid-template-rows: subgrid) {
+  .proj { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; align-content: start; }
+}
+.proj figure { margin: 0; }
+/* A card that spans both columns: figure in the left column, text in the right. */
+.proj.proj-wide { grid-column: 1 / -1; grid-row: auto; grid-template-rows: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 48px; align-items: start; }
+.proj-text { min-width: 0; }
+.proj-wide .proj-head { margin-top: 0; }
+.fig, .video { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 8px; }
+.fig { border: 1px solid var(--rule); background: var(--bg); }
+.fig svg { position: absolute; top: 12px; left: 10px; width: calc(100% - 20px); height: calc(100% - 24px); }
+
+/* demo videos: a local poster until someone presses play */
+.video {
+  overflow: hidden;
+  background-color: var(--scr-bg);
+  background-image: linear-gradient(var(--scr-grid) 1px, transparent 1px), linear-gradient(90deg, var(--scr-grid) 1px, transparent 1px);
+  background-size: 22px 22px; background-position: center;
+}
+.video::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  border: 1px solid var(--scr-edge); border-radius: inherit;
+}
+.video-link { position: absolute; inset: 0; display: block; color: var(--scr-fg); }
+.video-link:focus-visible { outline: 2px solid var(--scr-fg); outline-offset: -5px; border-radius: 6px; }
+.poster { position: absolute; top: 0; left: 50%; height: 100%; max-width: 100%; aspect-ratio: var(--ar, 16 / 9); transform: translateX(-50%); }
+.poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.play {
+  position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--scr-scrim); border: 2px solid currentColor;
+  transition: transform 0.15s, background-color 0.15s;
+}
+.play svg { width: 24px; height: 24px; margin-left: 3px; fill: currentColor; }
+.video-link:hover .play, .video-link:focus-visible .play { transform: scale(1.08); background: var(--scr-bg); }
+.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+.proj-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 16px; margin-top: 18px; }
+.proj h3 { font-size: 19px; line-height: 1.35; margin: 0; letter-spacing: -0.01em; }
+.proj p { margin: 8px 0 0; }
+.stack { font-size: 14px; color: var(--fg-3); }
+.proj .proj-links { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-top: 10px; font-weight: 700; font-size: 15px; }
+
+/* diagrams: ink on paper, semantic color only */
+.d-line { fill: none; stroke: var(--fg); stroke-width: 1.5; }
+.d-thin { fill: none; stroke: var(--fg-3); stroke-width: 1.2; }
+.d-link { fill: none; stroke: var(--fg-3); stroke-width: 1.3; stroke-dasharray: 3 3; }
+.d-box { fill: var(--bg); stroke: var(--fg); stroke-width: 1.5; }
+.d-wash { fill: var(--fg-wash); stroke: var(--fg); stroke-width: 1.3; }
+.d-empty { fill: var(--bg); stroke: var(--fg); stroke-width: 1.3; }
+.d-reg { fill: var(--fg); }
+.d-title { fill: var(--fg); font: 700 12.5px var(--font-sans); }
+.d-note { fill: var(--fg-3); font: 400 11.5px var(--font-sans); }
+.d-code { fill: var(--fg-2); font: 400 11.5px var(--font-mono); }
+.d-arrow { marker-end: url(#arrow); }
+.d-arrow2 { marker-start: url(#arrow); marker-end: url(#arrow); }
+.arrowhead { fill: var(--fg); }
+
+/* skills */
+.skills { display: grid; grid-template-columns: 180px minmax(0, 1fr); margin: 0; max-width: 820px; }
+.skills dt, .skills dd { padding-block: 13px; border-top: 1px solid var(--rule); }
+.skills dt:first-of-type, .skills dd:first-of-type { border-top: 0; padding-top: 2px; }
+.skills dt { font-weight: 700; padding-right: 20px; }
+.skills dd { margin: 0; color: var(--fg-2); }
+
+/* education */
+.course-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 32px; margin-top: 14px; }
+.course-grid h4 { margin: 0; font-size: 14.5px; }
+.course-grid p { margin: 2px 0 0; font-size: 14.5px; color: var(--fg-2); }
+.facts { display: grid; grid-template-columns: 180px minmax(0, 1fr); margin: 36px 0 0; max-width: 760px; }
+.facts dt, .facts dd { padding-block: 10px; border-top: 1px solid var(--rule); }
+.facts dt { font-weight: 700; padding-right: 20px; }
+.facts dd { margin: 0; color: var(--fg-2); }
+
+/* contact */
+.contact-lede { max-width: 56ch; margin: 0; font-size: 17px; }
+.email-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 22px; }
+.email {
+  font-size: clamp(21px, 3.3vw, 34px); font-weight: 700; letter-spacing: -0.02em;
+  color: var(--fg); text-decoration: none; overflow-wrap: anywhere;
+}
+.email:hover { text-decoration: underline; text-decoration-color: var(--sel); }
+.contact .links { margin-top: 20px; }
+
+/* footer title block */
+.titleblock {
+  display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 3.4fr);
+  border: 1px solid var(--fg); margin-block: 96px 40px; font-size: 13px;
+}
+.tb { padding: 8px 12px 10px; min-width: 0; }
+.tb + .tb { border-left: 1px solid var(--fg); }
+.tb span { display: block; font-size: 11px; color: var(--fg-3); }
+.tb p { margin: 1px 0 0; color: var(--fg-2); }
+.tb .big { font-weight: 700; color: var(--fg); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1040px) {
+  .bench-grid { grid-template-columns: minmax(0, 1fr); }
+  .panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; align-items: start; }
+  .panel .gains, .panel .opts { grid-column: 1; }
+  .panel .code-live, .panel .source { grid-column: 2; }
+  .panel .code-live { grid-row: 1; }
+  .panel .source { grid-row: 2 / span 2; }
+}
+@media (max-width: 880px) {
+  .nav ul { display: none; }
+  .nav-resume { margin-left: auto; }
+  .theme-btn { margin-left: -16px; }
+  .hero-top { grid-template-columns: minmax(0, 1fr); }
+  .sec-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .sec-head h2 { position: static; }
+  .proj-grid { grid-template-columns: minmax(0, 1fr); margin-top: 24px; }
+  .proj { padding-bottom: 52px; }
+  .proj.proj-wide { grid-template-columns: minmax(0, 1fr); }
+  .proj-wide .proj-head { margin-top: 18px; }
+  .offset { margin-left: 0; }
+  .panel { grid-template-columns: minmax(0, 1fr); }
+  .panel .code-live, .panel .source, .panel .gains, .panel .opts { grid-column: 1; grid-row: auto; }
+}
+@media (max-width: 640px) {
+  :root { --gutter: 16px; }
+  .hero { padding-block: 34px 0; }
+  .intro, .contact-lede { font-size: 16px; }
+  .bench { margin-top: 32px; }
+  .scope { padding: 8px 8px 8px; border-radius: 10px; }
+  .cell { padding: 6px 7px 7px; }
+  .cell .num { font-size: 16px; }
+  .cell .lbl { font-size: 11px; }
+  .cell .lim { font-size: 10.5px; }
+  .cell .st-word { display: none; }
+  .gain-row { grid-template-columns: 44px minmax(0, 1fr) 54px; }
+  .gname { display: none; }
+  .skills, .facts { grid-template-columns: minmax(0, 1fr); }
+  .skills dd, .facts dd { border-top: 0; padding-top: 0; }
+  .course-grid { grid-template-columns: minmax(0, 1fr); }
+  .titleblock { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .tb:first-child { grid-column: 1 / -1; }
+  .tb:nth-child(2) { border-left: 0; }
+  .tb:nth-child(n+2) { border-top: 1px solid var(--fg); }
+  .tb:last-child { grid-column: 1 / -1; border-left: 0; }
+  .fig svg { top: 6px; left: 4px; width: calc(100% - 8px); height: calc(100% - 12px); }
+  .play { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
+  .d-title { font-size: 14px; }
+  .d-note, .d-code { font-size: 12.5px; }
+  .section { padding-top: 72px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .source summary::before, .play { transition: none; }
+}
+@media print {
+  :root { --bg: #fff; --bg-2: #fff; --fg: #000; --fg-2: #222; --fg-3: #444; --rule: #bbb; --sel: #000; }
+  .nav, .skip, .panel, .scope-foot, .theme-btn { display: none !important; }
+  .bench-grid { grid-template-columns: minmax(0, 1fr); }
+  .section { padding-top: 32px; }
+  .sec-head h2 { position: static; }
+  .entry, .proj, .rows li { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- Shared drawing parts for the diagrams -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="arrowhead" d="M0 0L10 5L0 10z"/>
+    </marker>
+  </defs>
+</svg>
+
+<header class="nav" id="top">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">Minwoo Park</a>
+    <nav aria-label="Sections">
+      <ul>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#education">Education</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <a class="nav-resume" href="assets/Minwoo_Park_Resume.pdf" target="_blank" rel="noopener">Resume</a>
+    <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch to dark theme" title="Switch theme">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.75a7.25 7.25 0 0 1 0 14.5z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ===================== Hero ===================== -->
+  <section class="hero wrap" aria-labelledby="name">
+    <div class="hero-top">
+      <div class="hero-id">
+        <h1 id="name">Minwoo Park</h1>
+        <p class="role">Embedded software and controls engineer</p>
+        <p class="intro">I write control software for machines that have to move precisely. At Varian (Siemens Healthineers) I work on servo control and trajectory planning for radiotherapy machines. At Penn I research multi-drone payload control in the Kumar Lab.</p>
+      </div>
+      <div class="hero-act">
+        <p class="avail">Finishing my M.S. in Electrical Engineering at Penn in December 2026. Looking for full-time roles in embedded software, flight software, and controls.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="assets/Minwoo_Park_Resume.pdf" target="_blank" rel="noopener">
+            <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M5 2.75h6.5L15.25 6.5v10.75H5z"/><path d="M11.5 2.75V6.5h3.75M7.75 10.5h4.5M7.75 13.5h4.5"/></svg>
+            Resume (PDF)
+          </a>
+          <a class="btn btn-secondary" href="mailto:mwpark@engineering.upenn.edu">
+            <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="2.75" y="4.75" width="14.5" height="10.5" rx="1.5"/><path d="M3.25 5.5L10 10.75l6.75-5.25"/></svg>
+            Email me
+          </a>
+        </div>
+        <p class="links">
+          <a href="https://github.com/minpark830">GitHub</a>
+          <a href="https://www.linkedin.com/in/minwoo-park1/">LinkedIn</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Figure 1: live servo. The simulation in the script below mirrors pid.hpp line for line. -->
+    <figure class="bench" id="bench" aria-labelledby="fig1-cap">
+      <div class="bench-grid">
+        <div class="scope">
+          <div class="annun">
+            <div class="cell pass" id="req-os">
+              <span class="lbl">Overshoot</span>
+              <span class="val"><span class="num" id="v-os">2.7&#8239;%</span><span class="st"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="ic-pass" d="M2 6.5l2.6 2.6L10 3.4"/><path class="ic-fail" d="M3 3l6 6M9 3l-6 6"/></svg><span class="st-word">Pass</span></span></span>
+              <span class="lim">limit 5&#8239;%</span>
+            </div>
+            <div class="cell pass" id="req-ts">
+              <span class="lbl">Settling time</span>
+              <span class="val"><span class="num" id="v-ts">0.26&#8239;s</span><span class="st"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="ic-pass" d="M2 6.5l2.6 2.6L10 3.4"/><path class="ic-fail" d="M3 3l6 6M9 3l-6 6"/></svg><span class="st-word">Pass</span></span></span>
+              <span class="lim">to 2&#8239;%, limit 0.30&#8239;s</span>
+            </div>
+            <div class="cell pass" id="req-ld">
+              <span class="lbl">Error under load</span>
+              <span class="val"><span class="num" id="v-ld">0.51&#8239;%</span><span class="st"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="ic-pass" d="M2 6.5l2.6 2.6L10 3.4"/><path class="ic-fail" d="M3 3l6 6M9 3l-6 6"/></svg><span class="st-word">Pass</span></span></span>
+              <span class="lim">at 1.1&#8239;s, limit 1&#8239;%</span>
+            </div>
+          </div>
+          <div class="plot" id="plot">
+            <svg id="scope-svg" role="img" aria-label="Step response over two seconds: the target steps from 0 to 1 radian at 0.1 seconds and back at 1.1 seconds; the measured position follows it, and a load step is applied at 0.6 seconds." viewBox="0 0 640 300"></svg>
+          </div>
+          <div class="scope-foot">
+            <div class="legend" aria-hidden="true">
+              <span class="lg lg-target">Target</span>
+              <span class="lg lg-pos">Position</span>
+              <span class="lg lg-ghost" id="lg-ghost" hidden>Previous gains</span>
+              <span class="lg lg-cmd">Motor command</span>
+            </div>
+            <p class="advice ok" id="advice">All three requirements pass.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <fieldset class="gains">
+            <legend>Controller gains</legend>
+            <div class="gain-row">
+              <label for="kp"><span class="sym"><i>K</i><sub>p</sub></span><span class="gname">Proportional</span></label>
+              <input type="range" id="kp" min="0" max="20" step="0.1" value="15">
+              <output id="kp-out" for="kp">15.0</output>
+            </div>
+            <div class="gain-row">
+              <label for="ki"><span class="sym"><i>K</i><sub>i</sub></span><span class="gname">Integral</span></label>
+              <input type="range" id="ki" min="0" max="60" step="0.5" value="35">
+              <output id="ki-out" for="ki">35.0</output>
+            </div>
+            <div class="gain-row">
+              <label for="kd"><span class="sym"><i>K</i><sub>d</sub></span><span class="gname">Derivative</span></label>
+              <input type="range" id="kd" min="0" max="0.6" step="0.005" value="0.4">
+              <output id="kd-out" for="kd">0.400</output>
+            </div>
+          </fieldset>
+
+          <div class="opts">
+            <label class="check" for="noise"><input type="checkbox" id="noise"> Add sensor noise</label>
+            <button type="button" class="btn-text" id="reset">Reset gains</button>
+          </div>
+
+          <div class="code code-live">
+            <div class="code-head"><span class="file">gains.hpp</span><span>follows the sliders</span></div>
+<pre><code><span class="k">constexpr float</span> kKp = <span class="n" id="c-kp">15.0f</span>;  <span class="c">// u per rad</span>
+<span class="k">constexpr float</span> kKi = <span class="n" id="c-ki">35.0f</span>;  <span class="c">// u per rad·s</span>
+<span class="k">constexpr float</span> kKd = <span class="n" id="c-kd">0.400f</span>; <span class="c">// u·s per rad</span></code></pre>
+          </div>
+
+          <details class="source">
+            <summary><span class="when-closed">Show the controller source</span><span class="when-open">Hide the controller source</span></summary>
+            <div class="code">
+              <div class="code-head"><span class="file">pid.hpp</span><span>C++17</span></div>
+<pre><code><span class="k">#pragma once</span>
+<span class="k">#include</span> <span class="s">&lt;algorithm&gt;</span>
+
+<span class="c">// Discrete PID for a 1 kHz servo loop.</span>
+<span class="c">// - Derivative acts on the measurement through a</span>
+<span class="c">//   first-order filter, so setpoint steps don't kick.</span>
+<span class="c">// - Integration pauses while the output is saturated</span>
+<span class="c">//   in the direction of the error (anti-windup).</span>
+<span class="k">struct</span> Pid {
+  <span class="k">float</span> kp, ki, kd;    <span class="c">// gains</span>
+  <span class="k">float</span> tf;            <span class="c">// derivative filter [s]</span>
+  <span class="k">float</span> ts;            <span class="c">// sample period [s]</span>
+  <span class="k">float</span> u_min, u_max;  <span class="c">// actuator limits</span>
+
+  <span class="k">float</span> integ  = <span class="n">0.0f</span>;
+  <span class="k">float</span> d_filt = <span class="n">0.0f</span>;
+  <span class="k">float</span> y_prev = <span class="n">0.0f</span>;
+
+  <span class="k">float</span> update(<span class="k">float</span> r, <span class="k">float</span> y) {
+    <span class="k">const float</span> e = r - y;
+
+    <span class="k">const float</span> a  = tf / (tf + ts);
+    <span class="k">const float</span> dy = (y - y_prev) / ts;
+    d_filt = a * d_filt - (<span class="n">1.0f</span> - a) * kd * dy;
+    y_prev = y;
+
+    <span class="k">const float</span> u = kp * e + integ + d_filt;
+
+    <span class="k">const bool</span> windup = (u &gt; u_max &amp;&amp; e &gt; <span class="n">0.0f</span>) ||
+                        (u &lt; u_min &amp;&amp; e &lt; <span class="n">0.0f</span>);
+    <span class="k">if</span> (!windup) integ += ki * ts * e;
+
+    <span class="k">return</span> std::clamp(u, u_min, u_max);
+  }
+};</code></pre>
+            </div>
+            <div class="code">
+              <div class="code-head"><span class="file">control_loop.cpp</span><span>on an STM32</span></div>
+<pre><code><span class="k">#include</span> <span class="s">"gains.hpp"</span>
+<span class="k">#include</span> <span class="s">"pid.hpp"</span>
+<span class="k">#include</span> <span class="s">"stm32f4xx.h"</span>
+
+<span class="c">// Provided elsewhere in the firmware:</span>
+<span class="k">extern volatile float</span> g_setpoint;  <span class="c">// rad</span>
+<span class="k">float</span> encoder_angle_rad();
+<span class="k">void</span> pwm_set_duty(<span class="k">float</span> u);        <span class="c">// u in [-1, 1]</span>
+
+<span class="c">// tf = 5 ms, ts = 1 ms, output limits of -1 and 1</span>
+<span class="k">static</span> Pid pid{kKp, kKi, kKd, <span class="n">0.005f</span>, <span class="n">0.001f</span>,
+               <span class="n">-1.0f</span>, <span class="n">1.0f</span>};
+
+<span class="c">// TIM2 update interrupt at 1 kHz.</span>
+<span class="k">extern</span> <span class="s">"C"</span> <span class="k">void</span> TIM2_IRQHandler() {
+  TIM2-&gt;SR = ~TIM_SR_UIF;  <span class="c">// clear the update flag</span>
+  <span class="k">const float</span> y = encoder_angle_rad();
+  pwm_set_duty(pid.update(g_setpoint, y));
+}</code></pre>
+            </div>
+          </details>
+        </div>
+      </div>
+      <figcaption id="fig1-cap"><b>Figure 1.</b> A motor-driven position servo under discrete PID control at 1&#8239;kHz, simulated live in your browser, with a ±1 actuator limit and a load step at 0.6&#8239;s. Move a gain and the response, the requirement checks, and the C++ constants update together.</figcaption>
+      <p class="sr-only" id="scope-status" aria-live="polite"></p>
+    </figure>
+  </section>
+
+  <!-- ===================== Experience ===================== -->
+  <section class="section wrap" id="experience" aria-labelledby="h-exp">
+    <div class="sec-grid">
+      <div class="sec-head"><h2 id="h-exp">Experience</h2></div>
+      <div class="sec-body prose">
+
+        <article class="entry">
+          <div class="entry-head">
+            <h3>Varian (Siemens Healthineers)</h3>
+            <span class="when">May 2026 – present</span>
+          </div>
+          <p class="role-line">Embedded Software Engineer / Control Systems Intern, Palo Alto, CA</p>
+          <ul>
+            <li>Implement control and optimization algorithms that improve servo performance and motion accuracy on radiotherapy machines.</li>
+            <li>Develop and optimize path and treatment planning algorithms for machine trajectories, improving planning efficiency and system performance.</li>
+          </ul>
+          <p class="focus"><b>Techniques:</b> two-degree-of-freedom PID with feedforward, disturbance observers, jerk-limited trajectory generation.</p>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <h3>Kumar Lab, University of Pennsylvania</h3>
+            <span class="when">Aug 2025 – present</span>
+          </div>
+          <p class="role-line">Research Assistant, Philadelphia, PA</p>
+          <ul>
+            <li>Writing a research paper on multi-agent payload control: literature synthesis, problem formulation, and analysis of trajectory generation and controller performance.</li>
+            <li>Built and configured a Crazyflie test framework for evaluating trajectories and controllers, so aerial-robotics experiments can be reproduced and validated.</li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <h3>CPSquare, Cal Poly Cyber-Physical Systems Lab</h3>
+            <span class="when">Sep 2024 – Jun 2025</span>
+          </div>
+          <p class="role-line">Research Assistant, San Luis Obispo, CA</p>
+          <ul>
+            <li>Designed and implemented dynamic formation control that coordinates multiple drones and recovers from failures in real time.</li>
+            <li>Developed Kalman-filter localization for a swarm of Crazyflie quadcopters, tuned to work within the platform's hardware and sensor limits.</li>
+            <li>Built failure detection and recovery that keeps the swarm robust as environmental and sensor conditions change.</li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <h3>Stryker, Endoscopy</h3>
+            <span class="when">Jun – Sep 2024</span>
+          </div>
+          <p class="role-line">Advanced Operations Electrical Engineering Intern, San Jose, CA</p>
+          <ul>
+            <li>Introduced LabVIEW automation software on the 1788 camera head manufacturing line, cutting manufacturing time by up to 20%.</li>
+            <li>Reworked Precision Light Source calibration software to support the L11 light source line, saving 5% of production floor space.</li>
+            <li>Revised the 1788 camera head quality-check software, improving reliability and cutting debugging time by more than two weeks.</li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <h3>Stryker, Interventional Spine</h3>
+            <span class="when">Jun – Sep 2023</span>
+          </div>
+          <p class="role-line">R&amp;D Electrical Engineering Intern, Portage, MI</p>
+          <ul>
+            <li>Designed a PCBA in Altium and integrated it with an Arduino, cutting MultiGen 2 splitter box test time by 75%.</li>
+            <li>Tested and verified EMC and power compliance of RF ablation console PCBAs to IEC 60601.</li>
+            <li>Wrote the documentation for the MultiGen 2 test device used by R&amp;D teams.</li>
+          </ul>
+        </article>
+
+        <h3 class="sub">Teaching and earlier roles</h3>
+        <ul class="rows">
+          <li>
+            <span class="r-title">Instructional Teaching Assistant, Cal Poly EE</span>
+            <span class="when">2023 – 2025</span>
+            <span class="r-desc">Graded and gave feedback for EE 302 and EE 342 (classical controls and its lab). Taught soldering, PCB design, and microcontroller basics in EE 143, and graded EE 113 and EE 228.</span>
+          </li>
+          <li>
+            <span class="r-title">Student Assistant, Cal Poly Corporation</span>
+            <span class="when">Aug 2022 – Jul 2023</span>
+            <span class="r-desc">Automated grant and contract data collection with Power Automate workflows and Python scripts, and built a CRM app in JavaScript and Firebase.</span>
+          </li>
+          <li>
+            <span class="r-title">Code Sensei, Code Ninjas Cupertino</span>
+            <span class="when">Sep 2019 – Aug 2021</span>
+            <span class="r-desc">Taught programming fundamentals through JavaScript and guided students through debugging and building games.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Projects ===================== -->
+  <section class="section wrap" id="projects" aria-labelledby="h-proj">
+    <div class="sec-grid">
+      <div class="sec-head"><h2 id="h-proj">Projects</h2></div>
+      <div class="sec-body"><p class="sec-lede">Selected work in embedded software, controls, and hardware.</p></div>
+    </div>
+
+    <!-- Each card is figure, heading, body. Demo videos are a local poster that
+         swaps to a YouTube player on click (see the script at the end). -->
+    <div class="proj-grid">
+
+      <!-- Crazyflie swarm -->
+      <article class="proj">
+        <figure>
+          <div class="video" data-yt="4RDGtc2B57w" data-title="Crazyflie swarm controller demo">
+            <a class="video-link" href="https://www.youtube.com/watch?v=4RDGtc2B57w" aria-label="Play video: Crazyflie swarm controller demo">
+              <span class="poster" style="--ar: 16 / 9"><img src="assets/video/swarm-1280.jpg" srcset="assets/video/swarm-640.jpg 640w, assets/video/swarm-1280.jpg 1280w" sizes="(max-width: 880px) calc(100vw - 32px), 540px" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+              <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.2v13.6L19 12z"/></svg></span>
+            </a>
+          </div>
+          <figcaption><b>Video 1.</b> The swarm flying in the lab.</figcaption>
+        </figure>
+        <div class="proj-head">
+          <h3>Crazyflie swarm controller</h3>
+          <span class="when">Sep 2024 – Jun 2025</span>
+        </div>
+        <div class="proj-body">
+          <p>A framework for flying Crazyflie micro-drones in formation. Leader and follower apps written in C run on the drones' firmware, while a FastAPI server relays commands and position estimates over Crazyradio links. Followers hold triangle and line formations relative to the leader, localizing with an extended Kalman filter on optical-flow and range data. My Cal Poly senior project in the CPSquare lab with Nikolas Tambornini, flight-tested with three drones. I wrote the leader's firmware app and the FastAPI server.</p>
+          <p class="stack">C on the Crazyflie firmware (FreeRTOS), Python, FastAPI, WebSockets, Crazyradio 2.0, Flow deck</p>
+          <p class="proj-links"><a href="https://github.com/minpark830/CPSquare-crazyflie-firmware">Source on GitHub</a><a href="https://digitalcommons.calpoly.edu/eesp/689/">Read the report</a><a href="https://www.youtube.com/watch?v=4RDGtc2B57w">Watch on YouTube</a></p>
+        </div>
+      </article>
+
+      <!-- embedded-foundations -->
+      <article class="proj">
+        <figure>
+          <div class="fig">
+            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig2-cap">
+              <rect class="d-box" x="18" y="74" width="84" height="48" rx="3"/>
+              <text class="d-title" x="60" y="95" text-anchor="middle">ISR</text>
+              <text class="d-note" x="60" y="112" text-anchor="middle">producer</text>
+              <path class="d-line d-arrow" d="M102 98H158"/>
+              <text class="d-code" x="129" y="89" text-anchor="middle">push()</text>
+
+              <!-- 8-slot ring; slots 2 to 5 hold data, tail = 2, head = 6 -->
+              <path class="d-empty" d="M220 40A58 58 0 0 1 261.01 56.99L244.04 73.96A34 34 0 0 0 220 64Z"/>
+              <path class="d-empty" d="M261.01 56.99A58 58 0 0 1 278 98L254 98A34 34 0 0 0 244.04 73.96Z"/>
+              <path class="d-wash" d="M278 98A58 58 0 0 1 261.01 139.01L244.04 122.04A34 34 0 0 0 254 98Z"/>
+              <path class="d-wash" d="M261.01 139.01A58 58 0 0 1 220 156L220 132A34 34 0 0 0 244.04 122.04Z"/>
+              <path class="d-wash" d="M220 156A58 58 0 0 1 178.99 139.01L195.96 122.04A34 34 0 0 0 220 132Z"/>
+              <path class="d-wash" d="M178.99 139.01A58 58 0 0 1 162 98L186 98A34 34 0 0 0 195.96 122.04Z"/>
+              <path class="d-empty" d="M162 98A58 58 0 0 1 178.99 56.99L195.96 73.96A34 34 0 0 0 186 98Z"/>
+              <path class="d-empty" d="M178.99 56.99A58 58 0 0 1 220 40L220 64A34 34 0 0 0 195.96 73.96Z"/>
+
+              <path class="d-line d-arrow" d="M147.94 68.15L163.64 74.66"/>
+              <text class="d-title" x="142" y="64" text-anchor="end">head</text>
+              <path class="d-line d-arrow" d="M292.06 127.85L276.36 121.34"/>
+              <text class="d-title" x="298" y="138" text-anchor="start">tail</text>
+
+              <path class="d-line d-arrow" d="M282 98H331"/>
+              <text class="d-code" x="306" y="89" text-anchor="middle">pop()</text>
+              <rect class="d-box" x="332" y="74" width="92" height="48" rx="3"/>
+              <text class="d-title" x="378" y="95" text-anchor="middle">main loop</text>
+              <text class="d-note" x="378" y="112" text-anchor="middle">consumer</text>
+              <text class="d-note" x="220" y="188" text-anchor="middle">shaded slots hold unread samples</text>
+            </svg>
+          </div>
+          <figcaption id="fig2-cap"><b>Figure 2.</b> A single-producer, single-consumer ring buffer between an interrupt and the main loop.</figcaption>
+        </figure>
+        <div class="proj-head">
+          <h3>embedded-foundations</h3>
+          <span class="when">2026</span>
+        </div>
+        <div class="proj-body">
+          <p>C++17 building blocks for bare-metal Cortex-M firmware, verified on an STM32 Nucleo-F411RE: CRC-32, a single-producer/single-consumer ring buffer, a fixed-capacity StaticVector, an RAII critical section, and a GPIO abstraction. Cross-compiled with CMake and the Arm GNU toolchain, then flashed and debugged with OpenOCD.</p>
+          <p class="stack">C++17, STM32F411 (Cortex-M4), CMake, Arm GNU toolchain, OpenOCD</p>
+          <!-- Add a link here once the repo is public:
+          <p class="proj-links"><a href="https://github.com/minpark830/embedded-foundations">Source on GitHub</a></p> -->
+        </div>
+      </article>
+
+      <!-- Robot arm -->
+      <article class="proj">
+        <figure>
+          <div class="video" data-yt="hMJxErDgaPc" data-title="Vision-guided pick-and-place sorting demo">
+            <a class="video-link" href="https://www.youtube.com/watch?v=hMJxErDgaPc" aria-label="Play video: vision-guided pick-and-place sorting demo">
+              <span class="poster" style="--ar: 954 / 720"><img src="assets/video/arm-954.jpg" srcset="assets/video/arm-477.jpg 477w, assets/video/arm-954.jpg 954w" sizes="(max-width: 880px) 75vw, 400px" width="954" height="720" alt="" loading="lazy" decoding="async"></span>
+              <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.2v13.6L19 12z"/></svg></span>
+            </a>
+          </div>
+          <figcaption><b>Video 2.</b> The arm sorting colored balls into bins, guided by the camera. Video by teammate Seth Saxena.</figcaption>
+        </figure>
+        <div class="proj-head">
+          <h3>Vision-controlled robot arm</h3>
+          <span class="when">Sep – Dec 2024</span>
+        </div>
+        <div class="proj-body">
+          <p>Forward and inverse kinematics plus computer vision that let an OpenManipulator-X arm find objects and sort them with pick-and-place, with no operator in the loop. Built as a team project.</p>
+          <p class="stack">Forward and inverse kinematics, computer vision, OpenManipulator-X</p>
+          <p class="proj-links"><a href="https://www.youtube.com/watch?v=hMJxErDgaPc">Watch on YouTube</a></p>
+        </div>
+      </article>
+
+      <!-- RISC-V -->
+      <article class="proj">
+        <figure>
+          <div class="fig">
+            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig3-cap">
+              <rect class="d-box" x="22" y="28" width="68" height="48" rx="3"/>
+              <rect class="d-box" x="104" y="28" width="68" height="48" rx="3"/>
+              <rect class="d-box" x="186" y="28" width="68" height="48" rx="3"/>
+              <rect class="d-box" x="268" y="28" width="68" height="48" rx="3"/>
+              <rect class="d-box" x="350" y="28" width="68" height="48" rx="3"/>
+              <rect class="d-reg" x="94" y="22" width="6" height="60"/>
+              <rect class="d-reg" x="176" y="22" width="6" height="60"/>
+              <rect class="d-reg" x="258" y="22" width="6" height="60"/>
+              <rect class="d-reg" x="340" y="22" width="6" height="60"/>
+              <text class="d-title" x="56" y="49" text-anchor="middle">IF</text>
+              <text class="d-note" x="56" y="65" text-anchor="middle">fetch</text>
+              <text class="d-title" x="138" y="49" text-anchor="middle">ID</text>
+              <text class="d-note" x="138" y="65" text-anchor="middle">decode</text>
+              <text class="d-title" x="220" y="49" text-anchor="middle">EX</text>
+              <text class="d-note" x="220" y="65" text-anchor="middle">execute</text>
+              <text class="d-title" x="302" y="49" text-anchor="middle">MEM</text>
+              <text class="d-note" x="302" y="65" text-anchor="middle">memory</text>
+              <text class="d-title" x="384" y="49" text-anchor="middle">WB</text>
+              <text class="d-note" x="384" y="65" text-anchor="middle">write back</text>
+
+              <rect class="d-box" x="22" y="128" width="272" height="42" rx="3"/>
+              <text class="d-title" x="158" y="154" text-anchor="middle">Cache</text>
+              <rect class="d-box" x="304" y="128" width="114" height="42" rx="3"/>
+              <text class="d-title" x="361" y="146" text-anchor="middle">Peripheral I/O</text>
+              <text class="d-note" x="361" y="162" text-anchor="middle">memory-mapped</text>
+
+              <path class="d-line d-arrow" d="M56 127V77"/>
+              <path class="d-line d-arrow2" d="M288 77V127"/>
+              <text class="d-note" x="281" y="106" text-anchor="end">load / store</text>
+              <path class="d-line d-arrow2" d="M322 77V127"/>
+            </svg>
+          </div>
+          <figcaption id="fig3-cap"><b>Figure 3.</b> The five-stage pipeline, with cache and memory-mapped peripherals below it.</figcaption>
+        </figure>
+        <div class="proj-head">
+          <h3>Pipelined RISC-V CPU</h3>
+          <span class="when">Jan – Mar 2024</span>
+        </div>
+        <div class="proj-body">
+          <p>A 32-bit pipelined RISC-V processor with cache and peripheral I/O, written in SystemVerilog and running on a Basys-3 FPGA board.</p>
+          <p class="stack">SystemVerilog, Vivado, Basys-3 (Artix-7 FPGA)</p>
+        </div>
+      </article>
+
+      <!-- IR RC car -->
+      <article class="proj">
+        <figure>
+          <div class="video" data-yt="_VTcmsJO34g" data-title="Custom IR RC car demo">
+            <a class="video-link" href="https://www.youtube.com/watch?v=_VTcmsJO34g" aria-label="Play video: custom IR RC car demo">
+              <span class="poster" style="--ar: 350 / 720"><img src="assets/video/car-350.jpg" width="350" height="720" alt="" loading="lazy" decoding="async"></span>
+              <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.2v13.6L19 12z"/></svg></span>
+            </a>
+          </div>
+          <figcaption><b>Video 3.</b> The car in its final project demo.</figcaption>
+        </figure>
+        <div class="proj-head">
+          <h3>Custom IR RC car</h3>
+          <span class="when">Apr – Jun 2024</span>
+        </div>
+        <div class="proj-body">
+          <p>An IR-controlled car built on a custom chassis designed in Fusion 360. Final project for my microcontroller systems course at Cal Poly.</p>
+          <p class="stack">LCD, accelerometer, IR and ultrasonic sensors, motor drivers, Fusion 360</p>
+          <p class="proj-links"><a href="https://www.youtube.com/watch?v=_VTcmsJO34g">Watch on YouTube</a></p>
+        </div>
+      </article>
+
+      <!-- Underwater network -->
+      <article class="proj">
+        <figure>
+          <div class="fig">
+            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig4-cap">
+              <rect class="d-box" x="9" y="22" width="98" height="46" rx="3"/>
+              <text class="d-title" x="58" y="42" text-anchor="middle">DHT11</text>
+              <text class="d-note" x="58" y="58" text-anchor="middle">sensor</text>
+              <path class="d-line d-arrow" d="M107 45H116"/>
+              <rect class="d-box" x="117" y="22" width="98" height="46" rx="3"/>
+              <text class="d-title" x="166" y="42" text-anchor="middle">Ultrasonic</text>
+              <text class="d-note" x="166" y="58" text-anchor="middle">transmitter</text>
+
+              <path class="d-thin" d="M221 37q3 -4 6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0"/>
+              <path class="d-line" d="M221 45q3 -4 6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0"/>
+              <path class="d-thin" d="M221 53q3 -4 6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0"/>
+              <path class="d-line d-arrow" d="M323 45H332"/>
+              <text class="d-note" x="274" y="82" text-anchor="middle">through water</text>
+
+              <rect class="d-box" x="333" y="22" width="98" height="46" rx="3"/>
+              <text class="d-title" x="382" y="42" text-anchor="middle">Ultrasonic</text>
+              <text class="d-note" x="382" y="58" text-anchor="middle">receiver</text>
+              <path class="d-line d-arrow" d="M382 68V127"/>
+
+              <rect class="d-box" x="333" y="128" width="98" height="46" rx="3"/>
+              <text class="d-title" x="382" y="148" text-anchor="middle">AGC</text>
+              <text class="d-note" x="382" y="164" text-anchor="middle">gain control</text>
+              <path class="d-line d-arrow" d="M333 151H324"/>
+              <rect class="d-box" x="225" y="128" width="98" height="46" rx="3"/>
+              <text class="d-title" x="274" y="148" text-anchor="middle">PLL tone</text>
+              <text class="d-note" x="274" y="164" text-anchor="middle">decoder</text>
+              <path class="d-line d-arrow" d="M225 151H216"/>
+              <rect class="d-box" x="117" y="128" width="98" height="46" rx="3"/>
+              <text class="d-title" x="166" y="148" text-anchor="middle">Raspberry Pi</text>
+              <text class="d-note" x="166" y="164" text-anchor="middle">server</text>
+              <path class="d-line d-arrow" d="M117 151H108"/>
+              <rect class="d-box" x="9" y="128" width="98" height="46" rx="3"/>
+              <text class="d-title" x="58" y="148" text-anchor="middle">Web page</text>
+              <text class="d-note" x="58" y="164" text-anchor="middle">live readings</text>
+            </svg>
+          </div>
+          <figcaption id="fig4-cap"><b>Figure 4.</b> The signal chain from sensor to browser, including the acoustic link through water.</figcaption>
+        </figure>
+        <div class="proj-head">
+          <h3>Ultrasonic underwater sensor network</h3>
+          <span class="when">Sep – Dec 2024</span>
+        </div>
+        <div class="proj-body">
+          <p>An end-to-end link that sends DHT11 temperature and humidity readings through water as ultrasound. The receiver recovers the signal with automatic gain control and a PLL tone decoder, and a Raspberry Pi serves the data to a web page.</p>
+          <p class="stack">Analog front end, AGC, PLL tone decoding, Raspberry Pi</p>
+        </div>
+      </article>
+      <!-- FotoMagic: spans both columns, figure left and text right -->
+      <article class="proj proj-wide">
+        <figure>
+          <div class="fig">
+            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig5-cap">
+              <rect class="d-box" x="8" y="30" width="104" height="50" rx="3"/>
+              <text class="d-title" x="60" y="51" text-anchor="middle">React app</text>
+              <text class="d-note" x="60" y="68" text-anchor="middle">Vite</text>
+              <path class="d-line d-arrow2" d="M112 55H184"/>
+              <text class="d-note" x="148" y="46" text-anchor="middle">JWT auth</text>
+              <rect class="d-box" x="184" y="30" width="116" height="50" rx="3"/>
+              <text class="d-title" x="242" y="51" text-anchor="middle">Flask API</text>
+              <text class="d-note" x="242" y="68" text-anchor="middle">OpenCV effects</text>
+              <path class="d-line d-arrow2" d="M300 44L332 31"/>
+              <path class="d-line d-arrow2" d="M300 66L332 80"/>
+              <rect class="d-box" x="332" y="8" width="100" height="44" rx="3"/>
+              <text class="d-title" x="382" y="27" text-anchor="middle">MongoDB</text>
+              <text class="d-note" x="382" y="43" text-anchor="middle">user data</text>
+              <rect class="d-box" x="332" y="62" width="100" height="44" rx="3"/>
+              <text class="d-title" x="382" y="81" text-anchor="middle">Azure Blob</text>
+              <text class="d-note" x="382" y="97" text-anchor="middle">image files</text>
+
+              <path class="d-link" d="M8 122H432"/>
+              <text class="d-note" x="8" y="140">on every push and pull request to main</text>
+
+              <rect class="d-box" x="8" y="148" width="104" height="42" rx="3"/>
+              <text class="d-title" x="60" y="166" text-anchor="middle">Lint, build</text>
+              <text class="d-note" x="60" y="182" text-anchor="middle">CI checks</text>
+              <path class="d-line d-arrow" d="M112 169H184"/>
+              <rect class="d-box" x="184" y="148" width="116" height="42" rx="3"/>
+              <text class="d-title" x="242" y="166" text-anchor="middle">Deploy</text>
+              <text class="d-note" x="242" y="182" text-anchor="middle">GitHub Actions</text>
+              <path class="d-line d-arrow" d="M300 169H332"/>
+              <rect class="d-box" x="332" y="148" width="100" height="42" rx="3"/>
+              <text class="d-title" x="382" y="166" text-anchor="middle">Azure</text>
+              <text class="d-note" x="382" y="182" text-anchor="middle">site and API</text>
+            </svg>
+          </div>
+          <figcaption id="fig5-cap"><b>Figure 5.</b> How the app fits together, and the GitHub Actions pipeline that checks and deploys it.</figcaption>
+        </figure>
+        <div class="proj-text">
+          <div class="proj-head">
+            <h3>FotoMagic photo editor</h3>
+            <span class="when">Apr – Jun 2025</span>
+          </div>
+          <div class="proj-body">
+            <p>A full-stack photo editor where users sign in, upload images, and apply OpenCV effects and background removal. Built by a team of five as the final project for Cal Poly's Introduction to Software Engineering.</p>
+            <p>I wrote the GitHub Actions workflows that lint and build every push and pull request to main and deploy the React front end and Flask API to Azure. I also wrote the Cypress end-to-end test and the ESLint and Prettier setup, worked on the image editor UI, and wrote most of the architecture docs.</p>
+            <p class="stack">React, Vite, Flask, MongoDB, Azure, GitHub Actions, Cypress, ESLint, Prettier</p>
+            <p class="proj-links"><a href="https://github.com/cwong239/307FinalProject">Source on GitHub</a><a href="https://www.youtube.com/watch?v=qcPqslQKbzA">Watch the demo</a></p>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="offset">
+      <h3 class="sub">More projects</h3>
+      <ul class="rows">
+        <li>
+          <span class="r-title">Multi-axis trajectory library</span>
+          <span class="when">2026</span>
+          <span class="r-desc">Header-only C++ library for cubic and quintic polynomial trajectory segments and time-synchronized multi-axis motion.</span>
+        </li>
+        <li>
+          <span class="r-title">4-bit DAC PCBA</span>
+          <span class="when">Apr – Jun 2022</span>
+          <span class="r-desc">A binary-weighted resistor DAC on a custom board, integrated with an Arduino speaker system.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== Skills ===================== -->
+  <section class="section wrap" id="skills" aria-labelledby="h-skills">
+    <div class="sec-grid">
+      <div class="sec-head"><h2 id="h-skills">Skills</h2></div>
+      <div class="sec-body">
+        <dl class="skills">
+          <dt>Languages</dt>
+          <dd>C, C++ (C++17), Python, MATLAB, SystemVerilog, RISC-V assembly, Java, JavaScript, SQL</dd>
+          <dt>Embedded</dt>
+          <dd>STM32 (Cortex-M4), Arduino, Raspberry Pi, FPGAs (Basys-3, Vivado), I²C, SPI, UART, CMake, Arm GNU toolchain, OpenOCD</dd>
+          <dt>Controls and estimation</dt>
+          <dd>PID and two-degree-of-freedom control, feedforward, disturbance observers, trajectory generation, Kalman filtering, formation control, convex optimization, MATLAB and Simulink</dd>
+          <dt>Robotics</dt>
+          <dd>ROS, Crazyflie, forward and inverse kinematics, computer vision, multi-agent systems</dd>
+          <dt>Hardware</dt>
+          <dd>Altium, Eagle, LTspice and SPICE, PCB design and assembly, Fusion 360, EMC and IEC 60601 compliance testing</dd>
+          <dt>Lab and test</dt>
+          <dd>Oscilloscope, spectrum analyzer, network analyzer, multimeter, LabVIEW test automation</dd>
+          <dt>Web and tooling</dt>
+          <dd>React, Vite, FastAPI, REST APIs, WebSockets, Git and GitHub, GitHub Actions CI/CD, Cypress, ESLint, Prettier</dd>
+          <dt>Data and cloud</dt>
+          <dd>Machine learning, AWS, Microsoft Azure, Firebase, Power Automate</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Education ===================== -->
+  <section class="section wrap" id="education" aria-labelledby="h-edu">
+    <div class="sec-grid">
+      <div class="sec-head"><h2 id="h-edu">Education</h2></div>
+      <div class="sec-body prose">
+        <article class="entry">
+          <div class="entry-head">
+            <h3>University of Pennsylvania</h3>
+            <span class="when">Expected Dec 2026</span>
+          </div>
+          <p class="role-line">M.S. in Electrical Engineering, concentration in AI.</p>
+        </article>
+        <article class="entry">
+          <div class="entry-head">
+            <h3>California Polytechnic State University, San Luis Obispo</h3>
+            <span class="when">Sep 2021 – Jun 2025</span>
+          </div>
+          <p class="role-line">B.S. in Electrical Engineering, minor in Computer Science. GPA 3.96.</p>
+          <p class="focus"><b>Senior project:</b> <a href="https://digitalcommons.calpoly.edu/eesp/689/">Framework for Multi-Agent Coordination and Distributed Localization in Micro-UAVs</a>, with Nikolas Tambornini, advised by Siavash Farzan.</p>
+          <p class="focus"><b>Honors:</b> Dean's List every term from Fall 2021 to Spring 2025, and President's Honor List 2021–2025.</p>
+        </article>
+
+        <h3 class="sub">Relevant coursework</h3>
+        <div class="course-grid">
+          <div>
+            <h4>Controls and optimization</h4>
+            <p>Classical Controls, Linear Systems Theory, Digital and Continuous Systems, Optimization Theory, Modern Convex Optimization</p>
+          </div>
+          <div>
+            <h4>Embedded and digital</h4>
+            <p>Embedded Systems and Devices, Microcontroller System Design, Digital and Computer Design, Assembly Programming, Digital and Analog Electronics</p>
+          </div>
+          <div>
+            <h4>Robotics and learning</h4>
+            <p>Vision-Based Robotics, Learning in Robotics, Machine Learning, Principles of Deep Learning, Machine Learning for Time-Series Data</p>
+          </div>
+          <div>
+            <h4>Software and circuits</h4>
+            <p>Data Structures, Systems Programming, Object-Oriented Programming and Design, Discrete Structures, Circuit Analysis I–III</p>
+          </div>
+        </div>
+
+        <dl class="facts">
+          <dt>License</dt>
+          <dd>FCC Amateur Radio Technician</dd>
+          <dt>Languages</dt>
+          <dd>English, Korean, Spanish (limited)</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Contact ===================== -->
+  <section class="section wrap contact" id="contact" aria-labelledby="h-contact">
+    <div class="sec-grid">
+      <div class="sec-head"><h2 id="h-contact">Contact</h2></div>
+      <div class="sec-body">
+        <p class="contact-lede">Email is the fastest way to reach me. I'm happy to talk about embedded software, flight software, and controls roles, or about anything on this page.</p>
+        <div class="email-row">
+          <a class="email" id="email" href="mailto:mwpark@engineering.upenn.edu">mwpark@engineering.upenn.edu</a>
+          <button type="button" class="btn-text" id="copy-email" data-copy="mwpark@engineering.upenn.edu">Copy address</button>
+        </div>
+        <p class="links">
+          <a href="assets/Minwoo_Park_Resume.pdf" target="_blank" rel="noopener">Resume (PDF)</a>
+          <a href="https://github.com/minpark830">GitHub</a>
+          <a href="https://www.linkedin.com/in/minwoo-park1/">LinkedIn</a>
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="titleblock">
+    <div class="tb"><span>Title</span><p class="big">Minwoo Park</p></div>
+    <div class="tb"><span>Updated</span><p>Sep 2026</p></div>
+    <div class="tb"><span>Sheet</span><p>1 of 1</p></div>
+    <div class="tb"><span>Notes</span><p>Set in B612, the typeface developed for Airbus cockpit displays. Plain HTML, CSS, and JavaScript, with no frameworks and no tracking. Videos load from YouTube only when played.</p></div>
+  </div>
+</footer>
+
+<script>
+/* ---------- theme toggle ---------- */
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById("theme-btn");
+  if (!btn) return;
+  var mq = window.matchMedia("(prefers-color-scheme: dark)");
+  function current() {
+    var t = root.getAttribute("data-theme");
+    return t === "dark" || t === "light" ? t : (mq.matches ? "dark" : "light");
+  }
+  function label() {
+    btn.setAttribute("aria-label", current() === "dark" ? "Switch to light theme" : "Switch to dark theme");
+  }
+  btn.addEventListener("click", function () {
+    var next = current() === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+    label();
+  });
+  if (mq.addEventListener) mq.addEventListener("change", label);
+  label();
+})();
+
+/* ---------- copy email ---------- */
+(function () {
+  var btn = document.getElementById("copy-email");
+  if (!btn) return;
+  var text = btn.getAttribute("data-copy");
+  var timer;
+  function done(msg) {
+    btn.textContent = msg;
+    clearTimeout(timer);
+    timer = setTimeout(function () { btn.textContent = "Copy address"; }, 2200);
+  }
+  function selectAddress() {
+    var el = document.getElementById("email");
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    done("Address selected");
+  }
+  btn.addEventListener("click", function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done("Copied"); }, selectAddress);
+    } else {
+      selectAddress();
+    }
+  });
+})();
+
+/* ---------- demo videos: load the YouTube player only when asked ---------- */
+(function () {
+  if (window.VIDEO_LINKS_ONLY) return;
+  var boxes = document.querySelectorAll(".video[data-yt]");
+  Array.prototype.forEach.call(boxes, function (box) {
+    var link = box.querySelector(".video-link");
+    if (!link) return;
+    link.addEventListener("click", function (ev) {
+      if (ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      ev.preventDefault();
+      var f = document.createElement("iframe");
+      f.src = "https://www.youtube-nocookie.com/embed/" + box.getAttribute("data-yt") + "?autoplay=1&rel=0&playsinline=1";
+      f.title = box.getAttribute("data-title");
+      f.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share");
+      f.setAttribute("allowfullscreen", "");
+      f.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+      box.replaceChild(f, link);
+      f.focus();
+    });
+  });
+})();
+
+/* ---------- section highlight in the nav ---------- */
+(function () {
+  if (!("IntersectionObserver" in window)) return;
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav ul a[href^="#"]'));
+  var byId = {};
+  links.forEach(function (a) { byId[a.getAttribute("href").slice(1)] = a; });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      links.forEach(function (a) { a.removeAttribute("aria-current"); });
+      var a = byId[e.target.id];
+      if (a) a.setAttribute("aria-current", "location");
+    });
+  }, { rootMargin: "-40% 0px -55% 0px" });
+  Object.keys(byId).forEach(function (id) {
+    var s = document.getElementById(id);
+    if (s) io.observe(s);
+  });
+})();
+
+/* ---------- Figure 1: servo + PID, simulated at 1 kHz ---------- */
+(function () {
+  var svg = document.getElementById("scope-svg");
+  var plot = document.getElementById("plot");
+  if (!svg || !plot) return;
+
+  // Plant: DC-motor position servo, theta' = w, tau * w' = -w + K * (u - load).
+  // Controller: pid.hpp, run every ts. Load is referred to the motor input.
+  var P = { ts: 0.001, tf: 0.005, uMax: 1, tau: 0.1, K: 10, T: 2, tUp: 0.1, tDown: 1.1, tLoad: 0.6, load: 0.3, noise: 0.001 };
+  var N = Math.round(P.T / P.ts);
+  var I_UP = Math.round(P.tUp / P.ts), I_DOWN = Math.round(P.tDown / P.ts), I_LOAD = Math.round(P.tLoad / P.ts);
+  var DEF = { kp: 15, ki: 35, kd: 0.4 };
+  var KD_MAX = 0.6;
+  var REQ = { os: 5, ts: 0.30, ld: 1 };
+  var Y_MIN = -0.25, Y_MAX = 1.5, U_LIM = 1.25;
+
+  function simulate(g, noisy) {
+    var y = new Float32Array(N), u = new Float32Array(N);
+    var seed = 7;
+    function rand() {
+      seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+    function gauss() {
+      var a = 0;
+      while (a === 0) a = rand();
+      return Math.sqrt(-2 * Math.log(a)) * Math.cos(2 * Math.PI * rand());
+    }
+    var a = P.tf / (P.tf + P.ts);
+    var integ = 0, dFilt = 0, yPrev = 0;   // controller state
+    var th = 0, w = 0;                     // plant state
+    var h = P.ts, K = P.K, tau = P.tau;
+    for (var k = 0; k < N; k++) {
+      var r = (k >= I_UP && k < I_DOWN) ? 1 : 0;
+      var load = k >= I_LOAD ? P.load : 0;
+      var meas = th + (noisy ? P.noise * gauss() : 0);
+
+      // Pid::update(r, meas)
+      var e = r - meas;
+      var dy = (meas - yPrev) / P.ts;
+      dFilt = a * dFilt - (1 - a) * g.kd * dy;
+      yPrev = meas;
+      var uRaw = g.kp * e + integ + dFilt;
+      var windup = (uRaw > P.uMax && e > 0) || (uRaw < -P.uMax && e < 0);
+      if (!windup) integ += g.ki * P.ts * e;
+      var uk = uRaw > P.uMax ? P.uMax : (uRaw < -P.uMax ? -P.uMax : uRaw);
+
+      y[k] = th; u[k] = uk;
+
+      // plant, one RK4 step with the command held
+      var f = K * (uk - load);
+      var a1 = w,                 b1 = (f - w) / tau;
+      var a2 = w + h / 2 * b1,    b2 = (f - a2) / tau;
+      var a3 = w + h / 2 * b2,    b3 = (f - a3) / tau;
+      var a4 = w + h * b3,        b4 = (f - a4) / tau;
+      th += h / 6 * (a1 + 2 * a2 + 2 * a3 + a4);
+      w  += h / 6 * (b1 + 2 * b2 + 2 * b3 + b4);
+      if (!isFinite(th)) { th = 0; w = 0; }
+    }
+    return { y: y, u: u };
+  }
+
+  function metrics(y) {
+    var peak = -Infinity, reached90 = false, lastOut = -1;
+    for (var k = I_UP; k < I_LOAD; k++) {
+      if (y[k] > peak) peak = y[k];
+      if (y[k] >= 0.9) reached90 = true;
+      if (Math.abs(y[k] - 1) > 0.02) lastOut = k;
+    }
+    var settle = lastOut === I_LOAD - 1 ? null : (lastOut < 0 ? 0 : (lastOut + 1 - I_UP) * P.ts);
+    return {
+      os: Math.max(0, (peak - 1) * 100),
+      ts: settle,
+      ld: Math.abs(1 - y[I_DOWN - 1]) * 100,
+      reached: reached90
+    };
+  }
+
+  // --- drawing ---
+  var G = null;
+  function f1(v) { return (Math.round(v * 10) / 10).toString(); }
+
+  function build() {
+    var W = Math.max(260, Math.round(plot.clientWidth));
+    var H = Math.round(Math.min(330, Math.max(236, W * 0.48)));
+    var padL = 30, padR = 6, padT = 6, padB = 20, gap = 10;
+    var inner = H - padT - padB - gap;
+    var stripH = Math.round(inner * 0.28), mainH = inner - stripH;
+    var x0 = padL, x1 = W - padR, pw = x1 - x0;
+    var mT = padT, mB = padT + mainH, sT = mB + gap, sB = sT + stripH;
+    function X(t) { return x0 + t / P.T * pw; }
+    function Ym(v) { return mT + (Y_MAX - v) / (Y_MAX - Y_MIN) * mainH; }
+    function Ys(v) { return sT + (U_LIM - v) / (2 * U_LIM) * stripH; }
+    G = { W: W, H: H, x0: x0, x1: x1, pw: pw, mT: mT, mB: mB, sT: sT, sB: sB, X: X, Ym: Ym, Ys: Ys };
+
+    var s = "";
+    s += '<defs>' +
+      '<clipPath id="clip-main"><rect x="' + x0 + '" y="' + mT + '" width="' + pw + '" height="' + mainH + '"/></clipPath>' +
+      '<clipPath id="clip-strip"><rect x="' + x0 + '" y="' + sT + '" width="' + pw + '" height="' + stripH + '"/></clipPath>' +
+      '<clipPath id="clip-sweep"><rect id="sweep-rect" x="' + (x0 - 3) + '" y="0" width="' + (pw + 6) + '" height="' + H + '"/></clipPath>' +
+      '</defs>';
+    var i, t, x, v, yv;
+    for (i = 0; i <= 20; i++) {
+      x = f1(X(i * 0.1));
+      var cls = i % 5 === 0 ? "g2" : "g1";
+      s += '<line class="' + cls + '" x1="' + x + '" y1="' + mT + '" x2="' + x + '" y2="' + mB + '"/>';
+      s += '<line class="' + cls + '" x1="' + x + '" y1="' + sT + '" x2="' + x + '" y2="' + sB + '"/>';
+    }
+    [-0.25, 0.25, 0.75, 1.25].forEach(function (v) { var yy = f1(Ym(v)); s += '<line class="g1" x1="' + x0 + '" y1="' + yy + '" x2="' + x1 + '" y2="' + yy + '"/>'; });
+    [0, 0.5, 1].forEach(function (v) { var yy = f1(Ym(v)); s += '<line class="g2" x1="' + x0 + '" y1="' + yy + '" x2="' + x1 + '" y2="' + yy + '"/>'; });
+    yv = f1(Ys(0)); s += '<line class="g2" x1="' + x0 + '" y1="' + yv + '" x2="' + x1 + '" y2="' + yv + '"/>';
+    [1, -1].forEach(function (v) { var yy = f1(Ys(v)); s += '<line class="lim-line" x1="' + x0 + '" y1="' + yy + '" x2="' + x1 + '" y2="' + yy + '"/>'; });
+    s += '<rect class="frame" x="' + x0 + '" y="' + mT + '" width="' + pw + '" height="' + mainH + '"/>';
+    s += '<rect class="frame" x="' + x0 + '" y="' + sT + '" width="' + pw + '" height="' + stripH + '"/>';
+
+    [[0, "0"], [0.5, "0.5"], [1, "1.0"]].forEach(function (p) { s += '<text class="ax" x="' + (x0 - 5) + '" y="' + f1(Ym(p[0]) + 3.5) + '" text-anchor="end">' + p[1] + '</text>'; });
+    [[1, "+1"], [-1, "−1"]].forEach(function (p) { s += '<text class="ax" x="' + (x0 - 5) + '" y="' + f1(Ys(p[0]) + 3.5) + '" text-anchor="end">' + p[1] + '</text>'; });
+    [[0, "0", "start"], [0.5, "0.5", "middle"], [1, "1.0", "middle"], [1.5, "1.5", "middle"], [2, "2.0 s", "end"]].forEach(function (p) {
+      s += '<text class="ax" x="' + f1(X(p[0])) + '" y="' + (H - 5) + '" text-anchor="' + p[2] + '">' + p[1] + '</text>';
+    });
+    s += '<text class="ax ax-name" x="' + (x0 + 7) + '" y="' + (mT + 15) + '">position, rad</text>';
+    s += '<text class="ax ax-name" x="' + (x1 - 7) + '" y="' + f1(Ys(-1) - 5) + '" text-anchor="end">motor command</text>';
+
+    var xl = f1(X(P.tLoad));
+    s += '<line class="load-line" x1="' + xl + '" y1="' + mT + '" x2="' + xl + '" y2="' + mB + '"/>';
+    s += '<text class="ax ax-name" x="' + f1(X(P.tLoad) + 6) + '" y="' + (mB - 8) + '">load step</text>';
+
+    s += '<path class="tr-target" clip-path="url(#clip-main)" d="M' + f1(X(0)) + ',' + f1(Ym(0)) + 'H' + f1(X(P.tUp)) + 'V' + f1(Ym(1)) + 'H' + f1(X(P.tDown)) + 'V' + f1(Ym(0)) + 'H' + f1(X(P.T)) + '"/>';
+    s += '<g clip-path="url(#clip-sweep)">' +
+      '<path id="p-ghost" class="tr-ghost" clip-path="url(#clip-main)" d=""/>' +
+      '<path id="p-cmd" class="tr-cmd" clip-path="url(#clip-strip)" d=""/>' +
+      '<path id="p-pos" class="tr-pos" clip-path="url(#clip-main)" d=""/>' +
+      '</g>';
+    s += '<circle id="beam" class="beam" r="3.5" cx="0" cy="0" visibility="hidden"/>';
+
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.innerHTML = s;
+  }
+
+  function trace(arr, Yf, lo, hi) {
+    var step = Math.max(1, Math.floor(N / (G.pw * 1.5)));
+    var d = "", k, v;
+    for (k = 0; k < N; k += step) {
+      v = arr[k];
+      if (v < lo) v = lo; else if (v > hi) v = hi;
+      d += (k ? "L" : "M") + f1(G.X(k * P.ts)) + "," + f1(Yf(v));
+    }
+    v = arr[N - 1];
+    if (v < lo) v = lo; else if (v > hi) v = hi;
+    d += "L" + f1(G.X(P.T)) + "," + f1(Yf(v));
+    return d;
+  }
+
+  // --- controls ---
+  var inputs = { kp: document.getElementById("kp"), ki: document.getElementById("ki"), kd: document.getElementById("kd") };
+  var outs = { kp: document.getElementById("kp-out"), ki: document.getElementById("ki-out"), kd: document.getElementById("kd-out") };
+  var code = { kp: document.getElementById("c-kp"), ki: document.getElementById("c-ki"), kd: document.getElementById("c-kd") };
+  var digits = { kp: 1, ki: 1, kd: 3 };
+  var codeWidth = { kp: 4, ki: 4, kd: 5 };
+  var noiseBox = document.getElementById("noise");
+  var resetBtn = document.getElementById("reset");
+  var ghostLegend = document.getElementById("lg-ghost");
+  var advice = document.getElementById("advice");
+  var status = document.getElementById("scope-status");
+  var cells = { os: document.getElementById("req-os"), ts: document.getElementById("req-ts"), ld: document.getElementById("req-ld") };
+  var NB = " ";
+
+  var cur = null, ref = null, interacting = false, sweepId = 0;
+
+  function readGains() {
+    return { kp: parseFloat(inputs.kp.value), ki: parseFloat(inputs.ki.value), kd: parseFloat(inputs.kd.value) };
+  }
+  function sameState(a, b) {
+    return a && b && a.g.kp === b.g.kp && a.g.ki === b.g.ki && a.g.kd === b.g.kd && a.noisy === b.noisy;
+  }
+  function setCell(el, text, pass) {
+    el.classList.toggle("pass", pass);
+    el.classList.toggle("fail", !pass);
+    el.querySelector(".num").textContent = text;
+    el.querySelector(".st-word").textContent = pass ? "Pass" : "Fail";
+  }
+  // Manual-tuning advice. Following it reaches all three passes from any
+  // starting gains (checked offline against 300 random starts).
+  function adviceFor(m, pass, g) {
+    if (pass.os && pass.ts && pass.ld) return "All three requirements pass.";
+    if (!m.reached) return "Position never reaches the target. Raise Kp.";
+    if (!pass.os) {
+      if (g.kd < KD_MAX - 1e-9) return m.ts === null ? "Still oscillating. Raise Kd." : "Overshooting. Raise Kd.";
+      return "Overshooting at full Kd. Raise Kp or lower Ki.";
+    }
+    if (!pass.ld) return "The load pulls it off target. Raise Ki.";
+    return "Settling too slowly. Raise Kp.";
+  }
+
+  function paint() {
+    var posD = trace(cur.sim.y, G.Ym, Y_MIN - 0.6, Y_MAX + 0.6);
+    document.getElementById("p-pos").setAttribute("d", posD);
+    document.getElementById("p-cmd").setAttribute("d", trace(cur.sim.u, G.Ys, -1.4, 1.4));
+    var showGhost = ref && !sameState(ref, cur);
+    document.getElementById("p-ghost").setAttribute("d", showGhost ? trace(ref.sim.y, G.Ym, Y_MIN - 0.6, Y_MAX + 0.6) : "");
+    ghostLegend.hidden = !showGhost;
+  }
+
+  function update() {
+    var g = readGains();
+    var noisy = noiseBox.checked;
+    cur = { g: g, noisy: noisy, sim: simulate(g, noisy) };
+    cur.m = metrics(cur.sim.y);
+    paint();
+
+    ["kp", "ki", "kd"].forEach(function (key) {
+      var el = inputs[key];
+      var pct = (parseFloat(el.value) - parseFloat(el.min)) / (parseFloat(el.max) - parseFloat(el.min)) * 100;
+      el.style.setProperty("--pct", pct.toFixed(2) + "%");
+      var txt = g[key].toFixed(digits[key]);
+      outs[key].textContent = txt;
+      while (txt.length < codeWidth[key]) txt = " " + txt;
+      code[key].textContent = txt + "f";
+    });
+
+    var m = cur.m;
+    var pass = { os: m.os <= REQ.os, ts: m.ts !== null && m.ts <= REQ.ts, ld: m.ld <= REQ.ld };
+    setCell(cells.os, m.os >= 99.95 ? ">99" + NB + "%" : m.os.toFixed(1) + NB + "%", pass.os);
+    setCell(cells.ts, m.ts === null ? ">0.50" + NB + "s" : m.ts.toFixed(2) + NB + "s", pass.ts);
+    setCell(cells.ld, m.ld >= 99.995 ? ">99" + NB + "%" : m.ld.toFixed(2) + NB + "%", pass.ld);
+    var msg = adviceFor(m, pass, g);
+    advice.textContent = msg;
+    advice.classList.toggle("ok", pass.os && pass.ts && pass.ld);
+    cur.summary = "Overshoot " + m.os.toFixed(1) + " percent, " + (pass.os ? "pass" : "fail") +
+      ". Settling time " + (m.ts === null ? "over 0.5 seconds" : m.ts.toFixed(2) + " seconds") + ", " + (pass.ts ? "pass" : "fail") +
+      ". Error under load " + m.ld.toFixed(2) + " percent, " + (pass.ld ? "pass" : "fail") + ". " + msg;
+  }
+
+  function announce() { if (cur) status.textContent = cur.summary; }
+  function stopSweep() {
+    sweepId++;
+    var rect = document.getElementById("sweep-rect");
+    if (rect && G) rect.setAttribute("width", G.pw + 6);
+    var beam = document.getElementById("beam");
+    if (beam) beam.setAttribute("visibility", "hidden");
+  }
+  function beginInteraction() {
+    stopSweep();
+    if (!interacting) { ref = cur; interacting = true; }
+  }
+
+  ["kp", "ki", "kd"].forEach(function (key) {
+    inputs[key].addEventListener("input", function () { beginInteraction(); update(); });
+    inputs[key].addEventListener("change", function () { interacting = false; announce(); });
+  });
+  noiseBox.addEventListener("change", function () { stopSweep(); ref = cur; interacting = false; update(); announce(); });
+  resetBtn.addEventListener("click", function () {
+    stopSweep();
+    ref = cur; interacting = false;
+    inputs.kp.value = DEF.kp; inputs.ki.value = DEF.ki; inputs.kd.value = DEF.kd;
+    update(); announce();
+  });
+
+  // One sweep on arrival, like a scope trace being drawn.
+  function sweep() {
+    var rect = document.getElementById("sweep-rect");
+    var beam = document.getElementById("beam");
+    if (!rect || !beam) return;
+    var id = ++sweepId, dur = 1600, t0 = null;
+    rect.setAttribute("width", 0);
+    beam.setAttribute("visibility", "visible");
+    function frame(now) {
+      if (id !== sweepId) return;
+      if (t0 === null) t0 = now;
+      var f = Math.min(1, (now - t0) / dur);
+      rect.setAttribute("width", ((G.pw + 6) * f).toFixed(1));
+      var k = Math.min(N - 1, Math.floor(f * (N - 1)));
+      var v = Math.max(Y_MIN, Math.min(Y_MAX, cur.sim.y[k]));
+      beam.setAttribute("cx", f1(G.X(k * P.ts)));
+      beam.setAttribute("cy", f1(G.Ym(v)));
+      if (f < 1) requestAnimationFrame(frame);
+      else beam.setAttribute("visibility", "hidden");
+    }
+    requestAnimationFrame(frame);
+  }
+
+  build();
+  update();
+  if (cur) status.textContent = "";
+
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var box = plot.getBoundingClientRect();
+  if (!reduce && box.top < window.innerHeight && box.bottom > 0) sweep();
+
+  var lastW = plot.clientWidth;
+  function onResize() {
+    var wNow = plot.clientWidth;
+    if (Math.abs(wNow - lastW) < 1) return;
+    lastW = wNow;
+    stopSweep();
+    build();
+    paint();
+  }
+  if ("ResizeObserver" in window) new ResizeObserver(onResize).observe(plot);
+  else window.addEventListener("resize", onResize);
+})();
+</script>
+</body>
+</html>
