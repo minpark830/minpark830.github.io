@@ -21,8 +21,6 @@ The hero is a live position servo under PID control, simulated at 1 kHz in the b
 
 Every link is filled in: GitHub (`minpark830`), LinkedIn (`minwoo-park1`), and the site address `https://minpark830.github.io/`, which the page's preview metadata uses.
 
-The embedded-foundations card has its GitHub link commented out, because that repository isn't public yet. Once it is, remove the comment markers around the link in `index.html`.
-
 ## 2. Publish on GitHub Pages
 
 1. On GitHub, create a new **public** repository named exactly `minpark830.github.io`.
