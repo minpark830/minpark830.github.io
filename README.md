@@ -1,6 +1,6 @@
 # Minwoo Park, personal site
 
-A single-page portfolio for embedded software and controls roles. Plain HTML, CSS, and JavaScript: no build step, no frameworks, no trackers. It deploys to GitHub Pages for free.
+A single-page portfolio for software engineering roles, with a focus on embedded systems and controls. Plain HTML, CSS, and JavaScript: no build step, no frameworks, no trackers. It deploys to GitHub Pages for free.
 
 The hero is a live position servo under PID control, simulated at 1 kHz in the browser. Visitors can tune the gains and watch the step response, three requirement checks, and the C++ gain constants update together. The simulation mirrors `pid.hpp` as shown on the page; the two were checked against each other and agree to within 1e-6 rad.
 
