@@ -750,8 +750,8 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
           </div>
           <p class="role-line">Embedded Software Engineer / Control Systems Intern, Palo Alto, CA</p>
           <ul>
-            <li>Implement control and optimization algorithms that improve servo performance and motion accuracy on radiotherapy machines.</li>
-            <li>Develop and optimize path and treatment planning algorithms for machine trajectories, improving planning efficiency and system performance.</li>
+            <li>Build servo control, optimization, and path and treatment-planning algorithms in C++ and Python for radiotherapy machines, improving servo performance and motion accuracy.</li>
+            <li>Made trajectory generation 30% faster on average by optimizing the planning algorithms.</li>
           </ul>
           <p class="focus"><b>Techniques:</b> two-degree-of-freedom PID with feedforward, disturbance observers, jerk-limited trajectory generation.</p>
         </article>
@@ -775,8 +775,9 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
           </div>
           <p class="role-line">Research Assistant, San Luis Obispo, CA</p>
           <ul>
-            <li>Designed and implemented dynamic formation control that coordinates multiple drones and recovers from failures in real time.</li>
-            <li>Developed Kalman-filter localization for a swarm of Crazyflie quadcopters, tuned to work within the platform's hardware and sensor limits.</li>
+            <li>Co-developed leader-follower formation control (triangle and line formations) for a three-drone Crazyflie swarm that coordinates over peer-to-peer radio.</li>
+            <li>Wrote the leader drone's firmware app in C as FreeRTOS tasks, and a Python FastAPI ground server with a WebSocket link to each drone.</li>
+            <li>Developed EKF localization fusing optical-flow and time-of-flight range sensors on each drone.</li>
             <li>Built failure detection and recovery that keeps the swarm robust as environmental and sensor conditions change.</li>
           </ul>
         </article>
@@ -801,9 +802,10 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
           </div>
           <p class="role-line">R&amp;D Electrical Engineering Intern, Portage, MI</p>
           <ul>
-            <li>Designed a PCBA in Altium and integrated it with an Arduino, cutting MultiGen 2 splitter box test time by 75%.</li>
+            <li>Designed the schematic and PCB layout of an Arduino-integrated test board in Altium Designer, cutting MultiGen 2 splitter box test time by 75%.</li>
+            <li>Made the board's schematic symbols and footprints by hand, chose parts to meet power and cost requirements, and generated the bill of materials for purchasing.</li>
             <li>Tested and verified EMC and power compliance of RF ablation console PCBAs to IEC 60601.</li>
-            <li>Wrote the documentation for the MultiGen 2 test device used by R&amp;D teams.</li>
+            <li>Wrote the documentation for the MultiGen 2 test board used by R&amp;D teams.</li>
           </ul>
         </article>
 
@@ -1001,8 +1003,8 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
           <span class="when">Apr – Jun 2024</span>
         </div>
         <div class="proj-body">
-          <p>An IR-controlled car built on a custom chassis designed in Fusion 360. Final project for my microcontroller systems course at Cal Poly.</p>
-          <p class="stack">LCD, accelerometer, IR and ultrasonic sensors, motor drivers, Fusion 360</p>
+          <p>An IR-controlled car on an STM32 microcontroller and a custom chassis designed in Fusion 360. It uses I²C and SPI drivers and interrupts to tie together the motor drivers, IR and ultrasonic sensors, an accelerometer, and an LCD. Final project for my microcontroller systems course at Cal Poly.</p>
+          <p class="stack">STM32, I²C, SPI, interrupts, Fusion 360</p>
           <p class="proj-links"><a href="https://www.youtube.com/watch?v=_VTcmsJO34g">Watch on YouTube</a></p>
         </div>
       </article>
@@ -1082,9 +1084,9 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
           <dt>Languages</dt>
           <dd>C, C++, Python, MATLAB, SystemVerilog, RISC-V assembly, Java, JavaScript, SQL</dd>
           <dt>Embedded</dt>
-          <dd>STM32, Arduino, Raspberry Pi, FPGAs (Basys-3, Vivado), I²C, SPI, UART</dd>
+          <dd>FreeRTOS, STM32 (Arm Cortex-M), interrupts, I²C, SPI, UART, Arduino, Raspberry Pi, FPGAs (Basys-3, Vivado)</dd>
           <dt>Controls and estimation</dt>
-          <dd>PID and two-degree-of-freedom control, feedforward, disturbance observers, trajectory generation, Kalman filtering, formation control, convex optimization, MATLAB and Simulink</dd>
+          <dd>PID, two-degree-of-freedom and state-space control, feedforward, disturbance observers, trajectory generation, path planning, Kalman filtering (EKF), formation control, convex optimization, MATLAB and Simulink</dd>
           <dt>Robotics</dt>
           <dd>ROS, Crazyflie, forward and inverse kinematics, computer vision, multi-agent systems</dd>
           <dt>Hardware</dt>
@@ -1092,7 +1094,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
           <dt>Lab and test</dt>
           <dd>Oscilloscope, spectrum analyzer, network analyzer, multimeter, LabVIEW test automation</dd>
           <dt>Web and tooling</dt>
-          <dd>React, Vite, FastAPI, REST APIs, WebSockets, Git and GitHub, GitHub Actions CI/CD, Cypress, ESLint, Prettier</dd>
+          <dd>React, Vite, FastAPI, REST APIs, WebSockets, Linux, Git and GitHub, GitHub Actions CI/CD, Cypress, ESLint, Prettier</dd>
           <dt>Data and cloud</dt>
           <dd>Machine learning, AWS, Microsoft Azure, Firebase, Power Automate</dd>
         </dl>
