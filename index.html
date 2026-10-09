@@ -428,6 +428,18 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
 .stack { font-size: 14px; color: var(--fg-3); }
 .proj .proj-links { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-top: 10px; font-weight: 700; font-size: 15px; }
 
+/* featured project (Ohm): one card across both columns, figure left and text
+   right, lined up with the two columns of cards below it */
+.proj.proj-wide {
+  grid-column: 1 / -1; grid-row: auto;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto minmax(0, 1fr);
+  column-gap: 48px; align-items: start;
+}
+.proj-wide figure { grid-column: 1; grid-row: 1 / span 2; }
+.proj-wide .proj-head { grid-column: 2; grid-row: 1; margin-top: 0; }
+.proj-wide .proj-body { grid-column: 2; grid-row: 2; }
+.proj-wide .proj-links { margin-top: 18px; }
+
 /* diagrams: ink on paper, semantic color only */
 .d-line { fill: none; stroke: var(--fg); stroke-width: 1.5; }
 .d-thin { fill: none; stroke: var(--fg-3); stroke-width: 1.2; }
@@ -495,6 +507,9 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
   .sec-head h2 { position: static; }
   .proj-grid { grid-template-columns: minmax(0, 1fr); margin-top: 24px; }
   .proj { padding-bottom: 52px; }
+  .proj.proj-wide { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  .proj-wide figure, .proj-wide .proj-head, .proj-wide .proj-body { grid-column: 1; grid-row: auto; }
+  .proj-wide .proj-head { margin-top: 18px; }
   .offset { margin-left: 0; }
   .panel { grid-template-columns: minmax(0, 1fr); }
   .panel .code-live, .panel .source, .panel .gains, .panel .opts { grid-column: 1; grid-row: auto; }
@@ -835,12 +850,64 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
   <section class="section wrap" id="projects" aria-labelledby="h-proj">
     <div class="sec-grid">
       <div class="sec-head"><h2 id="h-proj">Projects</h2></div>
-      <div class="sec-body"><p class="sec-lede">Selected work in embedded software, controls, and hardware.</p></div>
+      <div class="sec-body"><p class="sec-lede">Selected work in embedded software, controls, hardware, and web apps.</p></div>
     </div>
 
     <!-- Each card is figure, heading, body. Demo videos are a local poster that
          swaps to a YouTube player on click (see the script at the end). -->
     <div class="proj-grid">
+
+      <!-- Ohm: featured across both columns. The live app is a separate GitHub
+           Pages project site (repo minpark830/ohm) served at /ohm/. Stage names
+           in Figure 2 match the app's study path (roadmap-data.js). -->
+      <article class="proj proj-wide">
+        <figure>
+          <div class="fig">
+            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig2-cap">
+              <rect class="d-box" x="9" y="24" width="124" height="46" rx="3"/>
+              <text class="d-title" x="71" y="44" text-anchor="middle">Circuits</text>
+              <text class="d-note" x="71" y="60" text-anchor="middle">foundations</text>
+              <path class="d-line d-arrow" d="M133 47H157"/>
+              <rect class="d-box" x="158" y="24" width="124" height="46" rx="3"/>
+              <text class="d-title" x="220" y="44" text-anchor="middle">RC response</text>
+              <text class="d-note" x="220" y="60" text-anchor="middle">and filters</text>
+              <path class="d-line d-arrow" d="M282 47H306"/>
+              <rect class="d-box" x="307" y="24" width="124" height="46" rx="3"/>
+              <text class="d-title" x="369" y="44" text-anchor="middle">BJTs</text>
+              <text class="d-note" x="369" y="60" text-anchor="middle">building blocks</text>
+              <path class="d-line d-arrow" d="M369 70V127"/>
+
+              <rect class="d-box" x="307" y="128" width="124" height="46" rx="3"/>
+              <text class="d-title" x="369" y="148" text-anchor="middle">MOSFETs</text>
+              <text class="d-note" x="369" y="164" text-anchor="middle">and CMOS</text>
+              <path class="d-line d-arrow" d="M307 151H283"/>
+              <rect class="d-box" x="158" y="128" width="124" height="46" rx="3"/>
+              <text class="d-title" x="220" y="148" text-anchor="middle">Digital logic</text>
+              <text class="d-note" x="220" y="164" text-anchor="middle">and timing</text>
+              <path class="d-line d-arrow" d="M158 151H134"/>
+              <rect class="d-box" x="9" y="128" width="124" height="46" rx="3"/>
+              <text class="d-title" x="71" y="148" text-anchor="middle">HDL</text>
+              <text class="d-note" x="71" y="164" text-anchor="middle">expressions</text>
+            </svg>
+          </div>
+          <figcaption id="fig2-cap"><b>Figure 2.</b> Ohm's study path, six stages from circuit foundations to HDL.</figcaption>
+        </figure>
+        <div class="proj-head">
+          <h3>Ohm, an EE interview practice app</h3>
+          <span class="when">2026</span>
+        </div>
+        <div class="proj-body">
+          <p>A web app for practicing electrical engineering interview problems, from circuit analysis and RC transients through BJTs, MOSFETs, digital logic, and HDL. Answers are checked instantly, with hints and solutions, and solved problems come back for spaced review.</p>
+          <p>A timed mock interview draws analog, digital, or mixed questions, and interactive simulations let you change a circuit and watch its voltages and currents respond. Progress saves in the browser, so anyone can start practicing without an account.</p>
+          <p class="stack">JavaScript, SVG circuit diagrams and simulations, GitHub Pages</p>
+          <p class="proj-links">
+            <a class="btn btn-primary" href="https://minpark830.github.io/ohm/">
+              <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 15h4.5v-2.1a5.5 5.5 0 1 1 5 0V15H17"/></svg>
+              Open Ohm
+            </a>
+          </p>
+        </div>
+      </article>
 
       <!-- Crazyflie swarm -->
       <article class="proj">
@@ -868,7 +935,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
       <article class="proj">
         <figure>
           <div class="fig">
-            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig2-cap">
+            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig3-cap">
               <rect class="d-box" x="8" y="30" width="104" height="50" rx="3"/>
               <text class="d-title" x="60" y="51" text-anchor="middle">React app</text>
               <text class="d-note" x="60" y="68" text-anchor="middle">Vite</text>
@@ -902,7 +969,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
               <text class="d-note" x="382" y="182" text-anchor="middle">site and API</text>
             </svg>
           </div>
-          <figcaption id="fig2-cap"><b>Figure 2.</b> How the app fits together, and the GitHub Actions pipeline that checks and deploys it.</figcaption>
+          <figcaption id="fig3-cap"><b>Figure 3.</b> How the app fits together, and the GitHub Actions pipeline that checks and deploys it.</figcaption>
         </figure>
         <div class="proj-head">
           <h3>FotoMagic photo editor</h3>
@@ -942,7 +1009,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
       <article class="proj">
         <figure>
           <div class="fig">
-            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig3-cap">
+            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig4-cap">
               <rect class="d-box" x="22" y="28" width="68" height="48" rx="3"/>
               <rect class="d-box" x="104" y="28" width="68" height="48" rx="3"/>
               <rect class="d-box" x="186" y="28" width="68" height="48" rx="3"/>
@@ -975,7 +1042,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
               <path class="d-line d-arrow2" d="M322 77V127"/>
             </svg>
           </div>
-          <figcaption id="fig3-cap"><b>Figure 3.</b> The five-stage pipeline, with cache and memory-mapped peripherals below it.</figcaption>
+          <figcaption id="fig4-cap"><b>Figure 4.</b> The five-stage pipeline, with cache and memory-mapped peripherals below it.</figcaption>
         </figure>
         <div class="proj-head">
           <h3>Pipelined RISC-V CPU</h3>
@@ -1013,7 +1080,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
       <article class="proj">
         <figure>
           <div class="fig">
-            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig4-cap">
+            <svg viewBox="0 0 440 200" role="img" aria-labelledby="fig5-cap">
               <rect class="d-box" x="9" y="22" width="98" height="46" rx="3"/>
               <text class="d-title" x="58" y="42" text-anchor="middle">DHT11</text>
               <text class="d-note" x="58" y="58" text-anchor="middle">sensor</text>
@@ -1050,7 +1117,7 @@ input[type="range"]:focus-visible { outline: 2px solid var(--sel); outline-offse
               <text class="d-note" x="58" y="164" text-anchor="middle">live readings</text>
             </svg>
           </div>
-          <figcaption id="fig4-cap"><b>Figure 4.</b> The signal chain from sensor to browser, including the acoustic link through water.</figcaption>
+          <figcaption id="fig5-cap"><b>Figure 5.</b> The signal chain from sensor to browser, including the acoustic link through water.</figcaption>
         </figure>
         <div class="proj-head">
           <h3>Ultrasonic underwater sensor network</h3>
