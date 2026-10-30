@@ -6,6 +6,7 @@ import RiscvPipeline from './RiscvPipeline.astro';
 import UnderwaterChain from './UnderwaterChain.astro';
 import ServoLoop from './ServoLoop.astro';
 import SwarmSystem from './SwarmSystem.astro';
+import MotionProfile from './MotionProfile.astro';
 
 /** Diagram components by id. Each takes the id of the caption that names it. */
 export const figures = {
@@ -16,4 +17,5 @@ export const figures = {
   'underwater-chain': UnderwaterChain,
   'servo-loop': ServoLoop,
   'swarm-system': SwarmSystem,
+  'motion-profile': MotionProfile,
 } satisfies Record<FigureId, unknown>;

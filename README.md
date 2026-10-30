@@ -3,8 +3,9 @@
 Minwoo Park's portfolio, live at **https://minpark830.github.io**.
 
 A static site built with [Astro](https://astro.build) and TypeScript. The home
-page opens on a live PID servo you can tune (Figure 1), and project write-ups go
-deeper than the cards. Every change is type-checked, unit-tested, checked in a
+page opens on a live PID servo you can tune (Figure 1), a second live instrument
+plans jerk-limited moves and shows the vibration they leave in a payload, and
+project write-ups go deeper than the cards. Every change is type-checked, unit-tested, checked in a
 real browser for accessibility and behavior, and held to Lighthouse budgets
 before GitHub Actions deploys it.
 
@@ -14,9 +15,10 @@ before GitHub Actions deploys it.
 | --- | --- | --- |
 | Types | `astro check` | Type errors in pages, components, and scripts |
 | Servo model | Vitest | The published numbers, the 2% steady error without integral action, no derivative kick, actuator limits, RK4 against the exact solution, and the tuning hints converging from 300 random starts |
-| C++ parity | Vitest + g++ | Compiles `firmware/pid.hpp` with `-Wall -Wextra -Wpedantic -Werror`, runs it on the same plant, and requires agreement with the browser model to 1e-6 rad; also compiles `firmware/control_loop.cpp` |
+| Motion planner | Vitest | 500 random moves end exactly at the target, at rest, inside every limit; the duration formula; matched jerk ramps cancel an undamped mode; the tuning hints converge from 300 random starts |
+| C++ parity | Vitest + g++ | Compiles `firmware/pid.hpp` and `firmware/scurve.hpp` with strict warnings (`-Wconversion -Wdouble-promotion` for the planner), runs both on the same inputs as the browser models, and requires agreement to 1e-6; also compiles `firmware/control_loop.cpp` |
 | The build | Vitest | Every internal link, anchor, and asset resolves; every page has its title, description, canonical address, and Open Graph tags; the sitemap is complete; JS, CSS, and HTML stay inside gzip budgets |
-| The browser | Playwright | Figure 1 responds to sliders, keyboard, and reset; the role filter and `?for=` links; videos load only when played; sheets link in a loop; the 404 page |
+| The browser | Playwright | Both instruments respond to sliders, keyboard, and reset; the role filter and `?for=` links; videos load only when played; sheets link in a loop; no page scrolls sideways on a phone; the 404 page |
 | Accessibility | axe-core | WCAG 2.2 AA on every page, in light and dark themes, on desktop and phone |
 | Performance | Lighthouse CI | Scores, layout shift, and page weight budgets |
 
@@ -26,20 +28,22 @@ before GitHub Actions deploys it.
 src/
   pages/               index.astro (sheet 1), projects/[slug].astro (write-ups), 404.astro
   layouts/             Base.astro (head, nav, title block), WriteUp.astro
-  components/          Hero, Bench (Figure 1), Experience, Projects (with the role filter), …
+  components/          Hero, Bench (the servo), Planner (the motion planner), Projects (with the role filter), …
   components/figures/  each diagram as a component
   content/projects/    one MDX file per project: frontmatter for the card, body for the write-up
   content/excerpts/    verbatim code quoted on the write-ups
   content.config.ts    the schema every project file must satisfy
   data/                experience, skills, education, results, and site-wide facts
-  lib/servo.ts         the servo model, shared by Figure 1 and the tests
-  scripts/             browser code for Figure 1 and the role filter
-firmware/              pid.hpp, gains.hpp, control_loop.cpp: the C++ shown beside Figure 1
+  lib/servo.ts         the servo model, shared by its instrument and the tests
+  lib/motion.ts        the motion planner and payload model, shared the same way
+  scripts/             browser code for the two instruments and the role filter
+  styles/              global tokens, and the shared instrument styles
+firmware/              pid.hpp, gains.hpp, control_loop.cpp, scurve.hpp: the C++ shown beside the instruments
 tests/
-  unit/                servo model and C++ parity
+  unit/                servo and planner models, and C++ parity
   dist/                checks on the built site
   e2e/                 browser and accessibility tests
-  cpp/                 the C++ test harness and a stand-in STM32 header
+  cpp/                 the C++ test harnesses and a stand-in STM32 header
 public/assets/         resume PDF, fonts, video posters, icons
 .github/workflows/     deploy.yml: check, test, build, deploy
 lighthouserc.json      Lighthouse assertions and budgets
@@ -58,7 +62,7 @@ npm run dev                         # http://localhost:4321
 
 ```sh
 npm run check                       # types
-npm run test:unit                   # servo model and C++ parity
+npm run test:unit                   # models and C++ parity
 npm run build
 npm run test:dist                   # links, metadata, sizes
 npx playwright install chromium     # once

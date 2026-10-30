@@ -1,0 +1,114 @@
+---
+// The live motion planner: a dark display beside a control panel, like the
+// servo on the home page. The planner source on the right is imported from
+// firmware/, the same file the unit tests compile.
+import { Code } from 'astro:components';
+import scurveSource from '../../firmware/scurve.hpp?raw';
+import { ACCEL_RANGE, DEFAULT_LIMITS, JERK_SLIDER, MOVE, REQUIREMENTS, evaluate, jerkStep } from '../lib/motion';
+import { formatJerk } from '../scripts/planner-format';
+import '../styles/instrument.css';
+
+interface Props {
+  label: string;
+  captionId: string;
+}
+const { label, captionId } = Astro.props;
+
+// Render the default move at build time, so the readouts are right before
+// any script runs.
+const r = evaluate(DEFAULT_LIMITS);
+const nb = ' ';
+const periodMs = Math.round(1000 / MOVE.modeHz);
+---
+
+<figure class="planner instrument" id="planner" aria-labelledby={captionId}>
+  <div class="inst-grid">
+    <div class="scope">
+      <div class="annun">
+        <div class="cell pass" id="pl-time">
+          <span class="lbl">Move time</span>
+          <span class="val">
+            <span class="num">{r.plan.duration.toFixed(2)}{nb}s</span>
+            <span class="st"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="ic-pass" d="M2 6.5l2.6 2.6L10 3.4"></path><path class="ic-fail" d="M3 3l6 6M9 3l-6 6"></path></svg><span class="st-word">Pass</span></span>
+          </span>
+          <span class="lim">limit {REQUIREMENTS.durationS.toFixed(2)}{nb}s</span>
+        </div>
+        <div class="cell pass" id="pl-res">
+          <span class="lbl">Residual vibration</span>
+          <span class="val">
+            <span class="num">{r.residualMm.toFixed(2)}{nb}mm</span>
+            <span class="st"><svg viewBox="0 0 12 12" aria-hidden="true"><path class="ic-pass" d="M2 6.5l2.6 2.6L10 3.4"></path><path class="ic-fail" d="M3 3l6 6M9 3l-6 6"></path></svg><span class="st-word">Pass</span></span>
+          </span>
+          <span class="lim">after the stop, limit {REQUIREMENTS.residualMm.toFixed(2)}{nb}mm</span>
+        </div>
+        <div class="cell" id="pl-ramp">
+          <span class="lbl">Jerk ramp</span>
+          <span class="val"><span class="num">{Math.round(r.plan.ramp * 1000)}{nb}ms</span></span>
+          <span class="lim">payload period {periodMs}{nb}ms</span>
+        </div>
+      </div>
+      <div class="plot" id="pl-plot">
+        <svg id="pl-svg" role="img" viewBox="0 0 640 360" aria-label={`Velocity, acceleration, and jerk of a ${MOVE.distance} meter move over ${MOVE.window} seconds, and the payload's swing after the axis stops.`}></svg>
+      </div>
+      <div class="scope-foot">
+        <div class="legend" aria-hidden="true">
+          <span class="lg lg-plan">Planned move</span>
+          <span class="lg lg-plan-ghost" id="pl-lg-trap" hidden>No jerk limit</span>
+          <span class="lg lg-pos">Payload swing</span>
+        </div>
+        <p class="advice ok" id="pl-advice">{r.advice}</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <fieldset class="gains">
+        <legend>Planner limits</legend>
+        <div class="gain-row">
+          <label for="pl-a"><span class="sym"><i>a</i><sub>max</sub></span><span class="gname">m/s²</span></label>
+          <input type="range" id="pl-a" min={ACCEL_RANGE.min} max={ACCEL_RANGE.max} step={ACCEL_RANGE.step} value={DEFAULT_LIMITS.a} />
+          <output id="pl-a-out" for="pl-a">{DEFAULT_LIMITS.a.toFixed(1)}</output>
+        </div>
+        <div class="gain-row">
+          <label for="pl-j"><span class="sym"><i>j</i><sub>max</sub></span><span class="gname">m/s³</span></label>
+          <input type="range" id="pl-j" min={JERK_SLIDER.min} max={JERK_SLIDER.max} step="1" value={jerkStep(DEFAULT_LIMITS.j)} aria-valuetext={`${formatJerk(DEFAULT_LIMITS.j)} meters per second cubed`} />
+          <output id="pl-j-out" for="pl-j">{formatJerk(DEFAULT_LIMITS.j)}</output>
+        </div>
+      </fieldset>
+
+      <div class="opts">
+        <label class="check"><input type="checkbox" id="pl-trap" /> Compare with no jerk limit</label>
+        <button type="button" class="btn-text" id="pl-reset">Reset limits</button>
+      </div>
+
+      <div class="code code-live">
+        <div class="code-head"><span class="file">limits.hpp</span><span>follows the sliders</span></div>
+        <pre tabindex="0"><code><span class="k">constexpr float</span> kVmax = <span class="n">{MOVE.vMax.toFixed(2)}f</span>; <span class="c">// m/s</span>
+<span class="k">constexpr float</span> kAmax = <span class="n" id="pl-c-a">{DEFAULT_LIMITS.a.toFixed(2)}f</span>; <span class="c">// m/s²</span>
+<span class="k">constexpr float</span> kJmax = <span class="n" id="pl-c-j">{formatJerk(DEFAULT_LIMITS.j, 4)}f</span>; <span class="c">// m/s³</span></code></pre>
+      </div>
+
+      <details class="source">
+        <summary><span class="when-closed">Show the planner source</span><span class="when-open">Hide the planner source</span></summary>
+        <div class="code">
+          <div class="code-head"><span class="file">scurve.hpp</span><span>C++17, compiled in CI</span></div>
+          <Code code={scurveSource.trimEnd()} lang="cpp" theme="css-variables" />
+        </div>
+      </details>
+    </div>
+  </div>
+  <p class="sr-only" id="pl-status" aria-live="polite"></p>
+  <figcaption id={captionId}>
+    <b>{label}.</b> A {MOVE.distance}&#8239;m move with a {MOVE.vMax}&#8239;m/s speed limit, planned live in your browser,
+    carrying a payload that rings at {MOVE.modeHz}&#8239;Hz. Change a limit and the profile, the payload's swing after
+    the stop, and the C++ constants update together.
+  </figcaption>
+</figure>
+
+<style>
+  .planner { margin: 8px 0 0; }
+</style>
+
+<script>
+  import { mountPlanner } from '../scripts/planner';
+  mountPlanner();
+</script>

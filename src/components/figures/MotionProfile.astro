@@ -1,0 +1,42 @@
+---
+// The default move from the planner sheet, drawn at build time from the
+// same model: velocity, acceleration, and jerk, with the first jerk ramp
+// marked against the payload's period.
+import { DEFAULT_LIMITS, MOVE, plan, sampleAt } from '../../lib/motion';
+
+interface Props { labelledby: string }
+const { labelledby } = Astro.props;
+
+const p = plan(MOVE.distance, DEFAULT_LIMITS);
+const x0 = 34, x1 = 428, span = 1.6;
+const X = (t: number) => x0 + (t / span) * (x1 - x0);
+const strips = [
+  { top: 16, h: 58, lo: -0.06, hi: 0.6, f: (t: number) => sampleAt(p, t).v, name: 'v' },
+  { top: 86, h: 50, lo: -2.6, hi: 2.6, f: (t: number) => sampleAt(p, t).a, name: 'a' },
+  { top: 148, h: 36, lo: -1.4, hi: 1.4, f: (t: number) => Math.sign(sampleAt(p, t).j), name: 'j' },
+].map((s) => ({ ...s, Y: (v: number) => s.top + ((s.hi - v) / (s.hi - s.lo)) * s.h }));
+
+const f1 = (v: number) => v.toFixed(1);
+const paths = strips.map((s) => {
+  let d = '';
+  for (let i = 0; i <= 320; i++) {
+    const t = (span * i) / 320;
+    d += `${i ? 'L' : 'M'}${f1(X(t))},${f1(s.Y(s.f(t)))}`;
+  }
+  return d;
+});
+const ramp = { x0: X(0), x1: X(p.ramp), y: strips[2]!.top - 3 };
+---
+<svg viewBox="0 0 440 200" role="img" aria-labelledby={labelledby}>
+  {strips.map((s, i) => (
+    <g>
+      <path class="d-thin" d={`M${x0} ${f1(s.Y(0))}H${x1}`}></path>
+      <text class="d-sym" x={x0 - 10} y={f1(s.Y(0) + 5)} text-anchor="end">{s.name}</text>
+      <path class="d-target" d={paths[i]}></path>
+    </g>
+  ))}
+  <path class="d-link" d={`M${f1(X(p.duration))} 10V188`}></path>
+  <text class="d-note" x={f1(X(p.duration) - 4)} y="196" text-anchor="end">stop at {p.duration.toFixed(2)} s</text>
+  <path class="d-line" d={`M${f1(ramp.x0)} ${ramp.y + 4}V${ramp.y}H${f1(ramp.x1)}V${ramp.y + 4}`}></path>
+  <text class="d-note" x={f1(ramp.x1 + 6)} y={ramp.y + 4}>{Math.round(p.ramp * 1000)} ms ramp, one payload period</text>
+</svg>

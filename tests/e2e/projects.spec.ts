@@ -6,17 +6,17 @@ test('choosing a role filters the projects and updates the address', async ({ pa
   await page.goto('/');
   const filter = page.getByRole('group', { name: 'Show projects for' });
   await expect(filter).toBeVisible();
-  await expect(visibleCards(page)).toHaveCount(7);
+  await expect(visibleCards(page)).toHaveCount(8);
 
   await filter.getByRole('radio', { name: /Controls/ }).check();
   await expect(page).toHaveURL(/\?for=controls$/);
-  await expect(visibleCards(page)).toHaveCount(2);
-  await expect(page.locator('#role-note')).toContainText('Showing 2 projects for controls roles.');
+  await expect(visibleCards(page)).toHaveCount(3);
+  await expect(page.locator('#role-note')).toContainText('Showing 3 projects for controls roles.');
   await expect(page.locator('#more-projects')).toBeHidden();
 
   await filter.getByRole('radio', { name: /All roles/ }).check();
   await expect(page).toHaveURL(/\/$/);
-  await expect(visibleCards(page)).toHaveCount(7);
+  await expect(visibleCards(page)).toHaveCount(8);
 });
 
 test('a link with ?for= opens the page already filtered', async ({ page }) => {

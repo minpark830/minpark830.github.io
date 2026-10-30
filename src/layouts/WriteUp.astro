@@ -3,6 +3,7 @@
 // with the facts, a rail listing the sections, and the text.
 import type { MarkdownHeading } from 'astro';
 import Base from './Base.astro';
+import Planner from '../components/Planner.astro';
 import { site } from '../data/site';
 import type { Project } from '../lib/sheets';
 
@@ -19,6 +20,8 @@ const w = d.writeup;
 if (!w) throw new Error(`${entry.id} has no write-up`);
 
 const sections = headings.filter((h) => h.depth === 2);
+// Links on the sheet itself, minus any that point back to this sheet.
+const links = d.links.filter((l) => l.href !== `/projects/${entry.id}/`);
 const url = new URL(`/projects/${entry.id}/`, Astro.site).href;
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -56,12 +59,18 @@ const jsonLd = {
           </div>
         ))}
       </dl>
-      {d.links.length > 0 && (
+      {links.length > 0 && (
         <ul class="links">
-          {d.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+          {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
         </ul>
       )}
     </header>
+
+    {w.instrument === 'planner' && (
+      <div class="sheet-instrument">
+        <Planner label="Figure 1" captionId="f-planner" />
+      </div>
+    )}
 
     <div class="sheet-grid">
       <nav class="toc no-print" aria-labelledby="toc-title">
@@ -103,12 +112,15 @@ const jsonLd = {
   .facts {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     margin: 28px 0 0; border: 1px solid var(--fg);
+    /* clip the cells' own right and bottom rules, so the outer frame shows on every side */
+    overflow: hidden;
   }
   .facts > div { padding: 8px 12px 10px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin: 0 -1px -1px 0; }
   dt { font-size: 11.5px; color: var(--fg-3); }
   dd { margin: 2px 0 0; font-size: var(--fs-ui); color: var(--fg); }
   .links { margin-top: 18px; }
 
+  .sheet-instrument { margin-top: 44px; }
   .sheet-grid {
     display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); column-gap: var(--rail-gap);
     margin-top: 56px; border-top: 1px solid var(--fg); padding-top: 8px;

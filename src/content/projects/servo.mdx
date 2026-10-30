@@ -85,7 +85,7 @@ Under the scope, the live servo suggests one change at a time, in a fixed order:
 GitHub Actions builds the site, and a change deploys only if every check passes.
 
 - **The model.** Vitest checks the default response against the numbers above, the 2% error without integral action, the derivative at a setpoint step, the actuator limits, and the tuning hints.
-- **The C++.** The workflow compiles `firmware/pid.hpp` with g++ and `-Wall -Wextra -Wpedantic -Werror`, runs it against the same motor, and compares the two step responses sample by sample. They agree to within 10<sup>−7</sup>&#8239;rad, about the size of float rounding, and the test fails above 10<sup>−6</sup>&#8239;rad. It also compiles `control_loop.cpp` against a stand-in for the STM32 header.
+- **The C++.** The workflow compiles `firmware/pid.hpp` with g++ and `-Wall`, `-Wextra`, `-Wpedantic`, and `-Werror`, runs it against the same motor, and compares the two step responses sample by sample. They agree to within 10<sup>−7</sup>&#8239;rad, about the size of float rounding, and the test fails above 10<sup>−6</sup>&#8239;rad. It also compiles `control_loop.cpp` against a stand-in for the STM32 header.
 - **The page.** Playwright moves the sliders and checks the readouts, the hints, and the `gains.hpp` block; axe checks accessibility in the light and dark themes; and Lighthouse holds the page to performance and size budgets.
 
 ## Limits of the model

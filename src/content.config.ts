@@ -39,6 +39,8 @@ const projects = defineCollection({
     order: z.number().int(),
     /** featured spans both columns; row is a line under "More projects"; unlisted has only a sheet */
     placement: z.enum(['featured', 'card', 'row', 'unlisted']),
+    /** put a featured project's drawing on the right instead of the left */
+    mirror: z.boolean().default(false),
     roles: z.array(z.enum(roleIds)).min(1),
     /** paragraphs for the card on the home page */
     card: z.array(z.string()).min(1),
@@ -48,7 +50,8 @@ const projects = defineCollection({
       .array(
         z.object({
           label: z.string(),
-          href: z.url(),
+          /** a full URL, or a path on this site */
+          href: z.union([z.url(), z.string().regex(/^\/[\w\-/#?=]*$/)]),
           /** shown as a button, for the one action a card is about */
           primary: z.boolean().default(false),
           icon: z.enum(['ohm']).optional(),
@@ -61,6 +64,8 @@ const projects = defineCollection({
         sheet: z.number().int().min(2),
         description: z.string().max(220),
         facts: z.array(z.object({ label: z.string(), value: z.string() })),
+        /** a live instrument shown full width above the text, as Figure 1 */
+        instrument: z.enum(['planner']).optional(),
       })
       .optional(),
   }),

@@ -1,0 +1,153 @@
+/*
+  The live instruments: a dark display beside a control panel. Shared by the
+  servo (Figure 1 on the home page) and the motion planner. Traces follow the
+  site's color rules: magenta for targets and planned motion, green for what
+  the machine actually does, amber for a requirement that fails.
+*/
+
+.instrument .inst-grid {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 28px; align-items: start;
+}
+.instrument .scope {
+  min-width: 0; padding: 12px 12px 10px;
+  background: var(--scr-bg); color: var(--scr-fg);
+  border: 1px solid var(--scr-edge); border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--scr-edge);
+}
+
+/* readouts across the top of the display */
+.instrument .annun {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--scr-grid-2); border-radius: var(--radius); margin-bottom: 10px;
+}
+.instrument .cell { min-width: 0; padding: 8px 10px 9px; display: grid; gap: 1px; }
+.instrument .cell + .cell { border-left: 1px solid var(--scr-grid-2); }
+.instrument .lbl { font-size: 12px; color: var(--scr-dim); line-height: 1.35; }
+.instrument .val { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.instrument .num { font: 700 20px/1.25 var(--font-sans); color: var(--scr-fg); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.instrument .st { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.instrument .st svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.instrument .lim { font-size: 11.5px; color: var(--scr-dim); line-height: 1.35; }
+.instrument .cell.pass .st { color: var(--scr-green); }
+.instrument .cell.fail .st, .instrument .cell.fail .num { color: var(--scr-amber); }
+.instrument .cell.pass .ic-fail, .instrument .cell.fail .ic-pass { display: none; }
+
+/* the plot, drawn by script */
+.instrument .plot { position: relative; }
+.instrument .plot svg { display: block; width: 100%; height: auto; overflow: hidden; }
+.instrument .plot .g1 { stroke: var(--scr-grid); stroke-width: 1; }
+.instrument .plot .g2 { stroke: var(--scr-grid-2); stroke-width: 1; }
+.instrument .plot .pframe { fill: none; stroke: var(--scr-grid-2); stroke-width: 1; }
+.instrument .plot .ax { fill: var(--scr-dim); font: 400 11px var(--font-sans); font-variant-numeric: tabular-nums; }
+/* a strip's name sits on a tab of screen color, with a halo for any trace that crosses it */
+.instrument .plot .ax-tab { fill: var(--scr-bg); }
+.instrument .plot .ax-name { paint-order: stroke; stroke: var(--scr-bg); stroke-width: 4px; stroke-linejoin: round; }
+.instrument .plot .ax-name.over { fill: var(--scr-amber); }
+.instrument .plot .lim-line { stroke: var(--scr-dim); stroke-width: 1; stroke-dasharray: 2 3; }
+.instrument .plot .load-line { stroke: var(--scr-dim); stroke-width: 1; stroke-dasharray: 4 3; }
+.instrument .plot .stop-line { stroke: var(--scr-magenta); stroke-width: 1; stroke-dasharray: 4 3; stroke-opacity: 0.8; }
+.instrument .plot .stop-ghost { stroke: var(--scr-magenta); stroke-width: 1; stroke-dasharray: 4 3; stroke-opacity: 0.35; }
+.instrument .plot .tr-target { fill: none; stroke: var(--scr-magenta); stroke-width: 1.6; stroke-dasharray: 6 4; }
+.instrument .plot .tr-plan { fill: none; stroke: var(--scr-magenta); stroke-width: 1.8; stroke-linejoin: round; }
+.instrument .plot .tr-plan-ghost { fill: none; stroke: var(--scr-magenta); stroke-width: 1.6; stroke-opacity: 0.35; stroke-linejoin: round; }
+.instrument .plot .tr-pos { fill: none; stroke: var(--scr-green); stroke-width: 2.2; stroke-linejoin: round; }
+.instrument .plot .tr-ghost { fill: none; stroke: var(--scr-green); stroke-width: 2; stroke-opacity: 0.3; stroke-linejoin: round; }
+.instrument .plot .tr-cmd { fill: none; stroke: var(--scr-cmd); stroke-width: 1.3; stroke-linejoin: round; }
+.instrument .plot .beam { fill: var(--scr-green); }
+
+/* legend and hint under the plot */
+.instrument .scope-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; margin-top: 8px; align-items: baseline; }
+.instrument .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--scr-dim); }
+.instrument .lg { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.instrument .lg::before { content: ''; width: 18px; border-top: 2px solid; }
+.instrument .lg-target::before { border-top-style: dashed; border-color: var(--scr-magenta); }
+.instrument .lg-plan::before { border-color: var(--scr-magenta); }
+.instrument .lg-plan-ghost::before { border-color: var(--scr-magenta); opacity: 0.4; }
+.instrument .lg-pos::before { border-color: var(--scr-green); }
+.instrument .lg-ghost::before { border-color: var(--scr-green); opacity: 0.35; }
+.instrument .lg-cmd::before { border-color: var(--scr-cmd); border-top-width: 1.5px; }
+.instrument .advice { font-size: 12.5px; font-weight: 700; color: var(--scr-amber); margin: 0; }
+.instrument .advice.ok { color: var(--scr-green); }
+
+/* the control panel */
+.instrument .panel { min-width: 0; display: grid; gap: 18px; }
+.instrument .gains { border: 0; margin: 0; padding: 0; min-width: 0; }
+.instrument .gains legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
+.instrument .gain-row { display: grid; grid-template-columns: 124px minmax(0, 1fr) 58px; gap: 12px; align-items: center; min-height: 44px; }
+.instrument .gain-row label { display: flex; align-items: baseline; gap: 9px; white-space: nowrap; }
+.instrument .sym { font-size: 17px; font-weight: 700; }
+.instrument .sym i { font-style: italic; font-weight: 400; }
+.instrument .sym sub { font-size: 0.68em; font-weight: 700; }
+.instrument .gname { font-size: var(--fs-cap); color: var(--fg-3); }
+.instrument output { font: 700 16px var(--font-sans); color: var(--sel); text-align: right; font-variant-numeric: tabular-nums; }
+
+.instrument input[type='range'] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 32px; margin: 0;
+  background: transparent; cursor: pointer; --pct: 50%;
+}
+.instrument input[type='range']::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, var(--sel) 0 var(--pct), var(--rule) var(--pct) 100%);
+}
+.instrument input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 12px; height: 22px; margin-top: -9px;
+  border-radius: 3px; background: var(--bg); border: 2px solid var(--sel);
+}
+.instrument input[type='range']::-moz-range-track { height: 4px; border-radius: 2px; background: var(--rule); }
+.instrument input[type='range']::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--sel); }
+.instrument input[type='range']::-moz-range-thumb { width: 8px; height: 18px; border-radius: 3px; background: var(--bg); border: 2px solid var(--sel); }
+.instrument input[type='range']:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+
+.instrument .opts { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
+.instrument .check { display: inline-flex; align-items: center; gap: 9px; font-size: var(--fs-ui); cursor: pointer; }
+.instrument .check input { width: 17px; height: 17px; margin: 0; accent-color: var(--sel); }
+
+.instrument .code-live .k { font-weight: 700; }
+.instrument .code-live .c { color: var(--fg-3); }
+.instrument .code-live .n { color: var(--sel); font-weight: 700; }
+.instrument .source summary {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  font-weight: 700; font-size: var(--fs-ui); color: var(--sel); list-style: none;
+}
+.instrument .source summary::-webkit-details-marker { display: none; }
+.instrument .source summary::before {
+  content: ''; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg); transition: transform 0.15s;
+}
+.instrument .source[open] summary::before { transform: rotate(45deg); }
+.instrument .source .when-open, .instrument .source[open] .when-closed { display: none; }
+.instrument .source[open] .when-open { display: inline; }
+.instrument .source > .code { margin-top: 12px; }
+/* code in the panel scrolls rather than wraps, even inside a write-up */
+.instrument .code pre { white-space: pre; overflow-wrap: normal; }
+.instrument .code pre .line { display: inline; padding: 0; text-indent: 0; }
+
+.instrument > figcaption { margin-top: 14px; }
+
+@media (max-width: 1040px) {
+  .instrument .inst-grid { grid-template-columns: minmax(0, 1fr); }
+  .instrument .panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; align-items: start; }
+  .instrument .gains, .instrument .opts { grid-column: 1; }
+  .instrument .code-live, .instrument .source { grid-column: 2; }
+  .instrument .code-live { grid-row: 1; }
+  .instrument .source { grid-row: 2 / span 2; }
+}
+@media (max-width: 900px) {
+  .instrument .panel { grid-template-columns: minmax(0, 1fr); }
+  .instrument .code-live, .instrument .source, .instrument .gains, .instrument .opts { grid-column: 1; grid-row: auto; }
+}
+@media (max-width: 640px) {
+  .instrument .scope { padding: 8px; }
+  .instrument .cell { padding: 6px 7px 7px; }
+  .instrument .num { font-size: 16px; }
+  .instrument .lbl { font-size: 11px; }
+  .instrument .lim { font-size: 10.5px; }
+  .instrument .st-word { display: none; }
+  .instrument .gain-row { grid-template-columns: 44px minmax(0, 1fr) 54px; }
+  .instrument .gname { display: none; }
+}
+@media print {
+  .instrument .panel, .instrument .scope-foot { display: none; }
+  .instrument .inst-grid { grid-template-columns: minmax(0, 1fr); }
+}

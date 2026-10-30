@@ -1,6 +1,6 @@
-# dependencies and build output
+# dependencies and build output (the leading slash keeps tests/dist/ tracked)
 node_modules/
-dist/
+/dist/
 .astro/
 
 # test and audit reports

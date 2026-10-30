@@ -7,6 +7,7 @@ export const figureIds = [
   'underwater-chain',
   'servo-loop',
   'swarm-system',
+  'motion-profile',
 ] as const;
 
 export type FigureId = (typeof figureIds)[number];

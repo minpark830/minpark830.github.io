@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const pages = ['/', '/projects/swarm/', '/projects/fotomagic/', '/projects/servo/', '/no-such-page/'];
+const pages = ['/', '/projects/swarm/', '/projects/fotomagic/', '/projects/servo/', '/projects/motion/', '/no-such-page/'];
 
 for (const scheme of ['light', 'dark'] as const) {
   test.describe(`${scheme} theme`, () => {
@@ -28,6 +28,15 @@ test('the theme button switches themes and remembers the choice', async ({ page 
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.getByRole('button', { name: 'Switch to light theme' })).toBeVisible();
+});
+
+test('no page scrolls sideways on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 780 });
+  for (const path of pages) {
+    await page.goto(path);
+    const width = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(width, path).toBeLessThanOrEqual(360);
+  }
 });
 
 test('a keyboard user can skip straight to the content', async ({ page, isMobile }) => {

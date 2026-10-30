@@ -1,0 +1,95 @@
+---
+title: Jerk-limited motion planner
+when: Oct 2026
+order: 2
+placement: featured
+mirror: true
+roles: [controls, embedded, software]
+card:
+  - A planner for point-to-point moves within limits on velocity, acceleration, and jerk, with a live demo of why the jerk limit matters. Change the limits and watch a payload riding on the axis keep swinging after the stop, or come to rest with it.
+  - Matching the jerk ramps to the payload's period cancels the leftover vibration for a fraction of a second of move time. The C++ planner the demo shows is compiled and checked against the browser model on every change.
+stack: C++17, TypeScript, Vitest, Playwright
+media:
+  kind: figure
+  figure: motion-profile
+  caption: A 0.5 m move with 250 ms jerk ramps, one period of a 4 Hz payload. Velocity, acceleration, and jerk, from the same planner as the demo.
+links:
+  - label: Try the planner
+    href: /projects/motion/
+    primary: true
+writeup:
+  sheet: 5
+  description: A planner for moves within limits on velocity, acceleration, and jerk, and a live demo of why jerk matters, with a payload that keeps swinging after the axis stops, or doesn't.
+  facts:
+    - label: Planner
+      value: Seven-phase jerk-limited profile, firmware/scurve.hpp
+    - label: Browser model
+      value: src/lib/motion.ts, checked against the C++
+    - label: Payload
+      value: One 4 Hz mode with 3% damping
+    - label: Checked by
+      value: Vitest, g++, Playwright, axe, Lighthouse
+  instrument: planner
+---
+
+import Eq from '../../components/Eq.astro';
+
+Try **Compare with no jerk limit**: the same move with instant changes in acceleration finishes a quarter of a second sooner, and leaves the payload swinging almost three times as far as the limit allows. Then raise <var>j</var><sub>max</sub> and watch the swing come back.
+
+## Why limit jerk
+
+The fastest move from rest to rest under limits on velocity and acceleration switches the acceleration on and off instantly. Each switch is a jolt that rings every lightly damped mode of the machine and whatever it carries, so the axis arrives on time and then has to wait for the ringing to die down before the next operation. A jerk limit turns each switch into a ramp. The ramps cost some time, and they decide how much vibration is left at the stop.
+
+## The profile
+
+With a jerk limit the move has seven phases of constant jerk: +<var>j</var>, 0, −<var>j</var> to reach the cruising speed, a cruise, then −<var>j</var>, 0, +<var>j</var> to stop. Each jerk ramp lasts <span class="m"><var>T</var><sub>r</sub> = <var>a</var><sub>max</sub> / <var>j</var><sub>max</sub></span>. When the move reaches both limits it takes
+
+<Eq n={1}><var>T</var> = <var>D</var> / <var>v</var><sub>max</sub> + <var>v</var><sub>max</sub> / <var>a</var><sub>max</sub> + <var>a</var><sub>max</sub> / <var>j</var><sub>max</sub></Eq>
+
+The first two terms are the move with no jerk limit, so the limit costs exactly one ramp. For the move in Figure 1 that is 1.00 + 0.25 + 0.25 = 1.50&#8239;s, against 1.25&#8239;s with no jerk limit. A shorter move may never reach <var>v</var><sub>max</sub>, or even <var>a</var><sub>max</sub>; the planner checks both cases and solves for the peak velocity or the ramp length instead. It follows the double-S profile in Biagiotti and Melchiorri's *Trajectory Planning for Automatic Machines and Robots*.
+
+## The payload
+
+The axis carries a payload on a mount that flexes, modeled as one mode at <var>f</var> = 4&#8239;Hz with 3% damping. If <var>q</var> is how far the payload lags the axis and <var>a</var>(<var>t</var>) is the axis acceleration,
+
+<Eq n={2}><var>q̈</var> + 2<var>ζω</var> <var>q̇</var> + <var>ω</var><sup>2</sup> <var>q</var> = −<var>a</var>(<var>t</var>)</Eq>
+
+While the acceleration holds steady the payload lags by <span class="m"><var>a</var> / <var>ω</var><sup>2</sup></span>, about 3&#8239;mm here, and that is harmless. What matters is the swing left when the axis stops, which the bottom strip of Figure 1 draws.
+
+## Matching the ramp to the mode
+
+A ramp of constant jerk <var>j</var> lasting <var>T</var><sub>r</sub> leaves an undamped mode swinging with amplitude
+
+<Eq n={3}><var>A</var> = (2<var>j</var> / <var>ω</var><sup>3</sup>) |sin(<var>π f T</var><sub>r</sub>)|</Eq>
+
+which is zero whenever the ramp lasts a whole number of mode periods. All of the planner's ramps have the same length, so setting <span class="m"><var>a</var><sub>max</sub> / <var>j</var><sub>max</sub> = 1 / <var>f</var></span> cancels the vibration from every one of them. With <var>a</var><sub>max</sub> = 2&#8239;m/s² and a 4&#8239;Hz payload, that is <var>j</var><sub>max</sub> = 8&#8239;m/s³. It is the same idea as input shaping (Singer and Seering, 1990), built into the trajectory instead of added as a filter.
+
+A unit test runs the move with the damping set to zero and checks that the swing left at the stop is below 10<sup>−12</sup>&#8239;m. With the 3% damping in Figure 1 a trace remains, 0.01&#8239;mm, well inside the requirement.
+
+## The requirements
+
+| Requirement | Limit | Default limits | No jerk limit |
+| --- | --- | --- | --- |
+| Move time | 1.60&#8239;s | 1.50&#8239;s | 1.25&#8239;s |
+| Swing after the stop | 0.10&#8239;mm | 0.01&#8239;mm | 0.29&#8239;mm |
+
+Under the display, the planner suggests one change at a time: first it names the jerk limit that makes each ramp last one payload period, then, if the move is too slow, it asks for more acceleration. A unit test starts from 300 random sets of limits, follows the hints, and checks that every run ends with both requirements passing.
+
+## The C++
+
+The panel shows `firmware/scurve.hpp`: plan once, then call `at(t)` from the control loop to get position, velocity, and acceleration. It allocates nothing and throws nothing, and it works in `float`. The build compiles it with `-Wall`, `-Wextra`, `-Wpedantic`, `-Wconversion`, `-Wdouble-promotion`, and `-Werror`, runs five moves through it, including a reverse move and moves too short to reach either limit, and compares every millisecond with the browser model. The two agree to within 10<sup>−6</sup>&#8239;m in position; the largest gap measured is about 3 × 10<sup>−7</sup>&#8239;m, which is float rounding.
+
+## How it is tested
+
+- **The planner.** 500 random moves end exactly at the target and at rest, never exceed a limit, and keep position, velocity, and acceleration continuous. Equation 1 holds, the jerk limit costs exactly one ramp, and a reverse move mirrors a forward one.
+- **The payload.** Matched ramps leave no swing without damping, a move with no jerk limit leaves more than 0.2&#8239;mm, and a steady push settles at the static lag <span class="m"><var>a</var> / <var>ω</var><sup>2</sup></span>.
+- **The page.** Playwright moves the sliders and checks the readouts, the hints, and the `limits.hpp` block; axe checks accessibility; and Lighthouse holds the page to performance and size budgets.
+
+## Limits of the model
+
+This is the textbook symmetric move from rest to rest. Real controllers also blend one move into the next, coordinate several axes along a path, and handle moves that start or end in motion. The payload here is a single mode at a known frequency; a real machine has several, their frequencies shift with load, and the shaping is tuned on the machine. The planner is written for this site from textbook material, and none of it comes from my work at Varian.
+
+## References
+
+- L. Biagiotti and C. Melchiorri, *Trajectory Planning for Automatic Machines and Robots*. Springer, 2008.
+- N. C. Singer and W. P. Seering, "Preshaping command inputs to reduce system vibration," *Journal of Dynamic Systems, Measurement, and Control*, vol. 112, no. 1, pp. 76–82, 1990.

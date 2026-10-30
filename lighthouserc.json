@@ -5,7 +5,8 @@
       "url": [
         "http://localhost/",
         "http://localhost/projects/swarm/",
-        "http://localhost/projects/servo/"
+        "http://localhost/projects/servo/",
+        "http://localhost/projects/motion/"
       ],
       "numberOfRuns": 1,
       "settings": {

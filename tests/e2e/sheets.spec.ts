@@ -1,10 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 const sheets = [
-  { path: '/', title: 'Minwoo Park', n: '1 of 4' },
-  { path: '/projects/swarm/', title: 'Crazyflie swarm controller', n: '2 of 4' },
-  { path: '/projects/fotomagic/', title: 'FotoMagic photo editor', n: '3 of 4' },
-  { path: '/projects/servo/', title: 'How the live servo works', n: '4 of 4' },
+  { path: '/', title: 'Minwoo Park', n: '1 of 5' },
+  { path: '/projects/swarm/', title: 'Crazyflie swarm controller', n: '2 of 5' },
+  { path: '/projects/fotomagic/', title: 'FotoMagic photo editor', n: '3 of 5' },
+  { path: '/projects/servo/', title: 'How the live servo works', n: '4 of 5' },
+  { path: '/projects/motion/', title: 'Jerk-limited motion planner', n: '5 of 5' },
 ];
 
 for (const s of sheets) {
@@ -23,7 +24,7 @@ for (const s of sheets) {
 
 test('the sheets link to one another in a loop', async ({ page }) => {
   await page.goto('/projects/swarm/');
-  for (const next of ['FotoMagic photo editor', 'How the live servo works', 'Crazyflie swarm controller']) {
+  for (const next of ['FotoMagic photo editor', 'How the live servo works', 'Jerk-limited motion planner', 'Crazyflie swarm controller']) {
     await page.getByRole('link', { name: new RegExp(`Next sheet ${next}`) }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(next);
   }
