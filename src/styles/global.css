@@ -283,7 +283,13 @@ figcaption b { color: var(--fg-2); }
 }
 .prose table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
 .prose th, .prose td { text-align: left; padding: 8px 14px 8px 0; border-top: 1px solid var(--rule); vertical-align: top; }
+.prose :is(th, td):last-child { padding-right: 0; }
 .prose thead th { border-top: 0; border-bottom: 1px solid var(--fg); font-size: var(--fs-ui); color: var(--fg-2); padding-bottom: 6px; }
+/* A table can't wrap inside a word, so on a phone it gets tighter instead of wider than the screen. */
+@media (max-width: 480px) {
+  .prose table { font-size: 14px; }
+  .prose th, .prose td { padding-right: 10px; }
+}
 .prose var, .m { font-family: var(--font-math); font-style: italic; font-size: 1.08em; line-height: 1; }
 .m var { font-size: 1em; }
 .m { font-style: normal; white-space: nowrap; }

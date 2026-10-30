@@ -34,8 +34,30 @@ test('no page scrolls sideways on a phone', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   for (const path of pages) {
     await page.goto(path);
-    const width = await page.evaluate(() => document.documentElement.scrollWidth);
-    expect(width, path).toBeLessThanOrEqual(360);
+    // On failure, name the innermost elements that reach past the edge
+    // outside any scrolling box, so a CI failure says what to fix.
+    const { width, past } = await page.evaluate(() => {
+      const edge = document.documentElement.clientWidth + 0.5;
+      const inScroller = (el: Element) => {
+        for (let a = el.parentElement; a && a !== document.documentElement; a = a.parentElement) {
+          if (/auto|scroll|hidden|clip/.test(getComputedStyle(a).overflowX)) return true;
+        }
+        return false;
+      };
+      const over = [...document.querySelectorAll('body *')].filter(
+        (el) => el.getBoundingClientRect().right > edge && !inScroller(el),
+      );
+      const innermost = over.filter((el) => !over.some((o) => o !== el && el.contains(o)));
+      return {
+        width: document.documentElement.scrollWidth,
+        past: innermost.slice(0, 4).map((el) => {
+          const name = el.tagName.toLowerCase() + (el.classList.length ? `.${[...el.classList].join('.')}` : '');
+          const text = (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 40);
+          return `${name} to ${Math.round(el.getBoundingClientRect().right)}px ("${text}")`;
+        }),
+      };
+    });
+    expect(width, `${path} past the edge: ${past.join('; ') || 'nothing found'}`).toBeLessThanOrEqual(360);
   }
 });
 

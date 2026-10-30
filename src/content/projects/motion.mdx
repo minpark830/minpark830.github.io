@@ -70,8 +70,8 @@ A unit test runs the move with the damping set to zero and checks that the swing
 
 | Requirement | Limit | Default limits | No jerk limit |
 | --- | --- | --- | --- |
-| Move time | 1.60&#8239;s | 1.50&#8239;s | 1.25&#8239;s |
-| Swing after the stop | 0.10&#8239;mm | 0.01&#8239;mm | 0.29&#8239;mm |
+| Move time, s | 1.60 | 1.50 | 1.25 |
+| Swing after the stop, mm | 0.10 | 0.01 | 0.29 |
 
 Under the display, the planner suggests one change at a time: first it names the jerk limit that makes each ramp last one payload period, then, if the move is too slow, it asks for more acceleration. A unit test starts from 300 random sets of limits, follows the hints, and checks that every run ends with both requirements passing.
 
