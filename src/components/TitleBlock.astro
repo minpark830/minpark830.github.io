@@ -1,0 +1,67 @@
+---
+// The footer, drawn as the title block of an engineering drawing. The
+// revision is the commit this page was built from.
+import { site } from '../data/site';
+import { buildInfo, monthYear } from '../lib/build-info';
+import type { Sheet } from '../lib/sheets';
+
+interface Props {
+  sheet: Sheet;
+}
+const { sheet } = Astro.props;
+const { sha, date } = buildInfo();
+---
+
+<div class="titleblock">
+  <div class="tb tb-title">
+    <span>Title</span>
+    <p class="big">{site.name}</p>
+    <p>{sheet.title}</p>
+  </div>
+  <div class="tb">
+    <span>Sheet</span>
+    <p class="num">{sheet.n === null ? 'Not in set' : `${sheet.n} of ${sheet.of}`}</p>
+  </div>
+  <div class="tb">
+    <span>Revision</span>
+    <p class="num">
+      {sha ? <a href={`${site.repo}/commit/${sha}`}>{sha.slice(0, 7)}</a> : 'Local build'}
+    </p>
+  </div>
+  <div class="tb">
+    <span>Updated</span>
+    <p class="num">{monthYear(date)}</p>
+  </div>
+  <div class="tb tb-notes">
+    <span>Notes</span>
+    <p>
+      Set in B612, the typeface designed for Airbus cockpit displays. Built with Astro and TypeScript, with no
+      tracking. Every change is type-checked, unit-tested against the C++ controller, and checked for accessibility,
+      broken links, and page weight before it deploys. <a href={site.repo}>Source on GitHub</a>.
+    </p>
+  </div>
+</div>
+
+<style>
+  .titleblock {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 3.6fr);
+    border: 1px solid var(--fg);
+    margin-block: 104px 40px;
+    font-size: 13px;
+  }
+  .tb { padding: 8px 12px 10px; min-width: 0; }
+  .tb + .tb { border-left: 1px solid var(--fg); }
+  span { display: block; font-size: 11px; color: var(--fg-3); }
+  p { margin: 1px 0 0; color: var(--fg-2); }
+  .big { font-weight: 700; color: var(--fg); }
+  a { color: inherit; }
+  @media (max-width: 900px) {
+    .titleblock { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .tb-title { grid-column: 1 / -1; }
+    .tb + .tb { border-left: 0; }
+    .tb:nth-child(n + 2) { border-top: 1px solid var(--fg); }
+    .tb:nth-child(3), .tb:nth-child(4) { border-left: 1px solid var(--fg); }
+    .tb-notes { grid-column: 1 / -1; }
+  }
+</style>

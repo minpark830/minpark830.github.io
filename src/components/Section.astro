@@ -1,0 +1,18 @@
+---
+// A page section: the heading sits in a rail to the left of the content and
+// stays in view while the section scrolls by.
+interface Props {
+  id: string;
+  title: string;
+  class?: string;
+}
+const { id, title, class: className } = Astro.props;
+---
+
+<section class:list={['section', 'wrap', className]} id={id} aria-labelledby={`h-${id}`}>
+  <div class="sec-grid">
+    <div class="sec-head"><h2 id={`h-${id}`}>{title}</h2></div>
+    <div class="sec-body"><slot /></div>
+  </div>
+  <slot name="after" />
+</section>

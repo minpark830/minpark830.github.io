@@ -1,0 +1,25 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import WriteUp from '../../layouts/WriteUp.astro';
+import { writeups, type Project } from '../../lib/sheets';
+
+export const getStaticPaths = (async () => {
+  const sheets = await writeups();
+  return sheets.map((entry, i) => {
+    // Sheet numbers are printed in the title block, so check they run 2, 3, 4...
+    if (entry.data.writeup?.sheet !== i + 2) {
+      throw new Error(`${entry.id}: expected sheet ${i + 2}, found ${entry.data.writeup?.sheet}`);
+    }
+    const next = sheets[(i + 1) % sheets.length] as Project;
+    return { params: { slug: entry.id }, props: { entry, n: i + 2, of: sheets.length + 1, next } };
+  });
+}) satisfies GetStaticPaths;
+
+const { entry, n, of, next } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<WriteUp entry={entry} headings={headings} n={n} of={of} next={next}>
+  <Content />
+</WriteUp>

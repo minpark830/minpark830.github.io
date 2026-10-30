@@ -1,0 +1,28 @@
+---
+// A displayed equation, numbered at the right margin as in a paper.
+interface Props {
+  n: number;
+}
+const { n } = Astro.props;
+---
+
+<div class="eq" role="group" aria-label={`Equation ${n}`}>
+  <span class="eq-body"><slot /></span>
+  <span class="eq-n">({n})</span>
+</div>
+
+<style>
+  .eq {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    padding: 14px 0; border-block: 1px solid var(--rule);
+    font: 400 19px/1.4 var(--font-math);
+  }
+  .eq-body { white-space: nowrap; }
+  @media (max-width: 640px) {
+    .eq { font-size: 17px; }
+    .eq-body { white-space: normal; }
+  }
+  .eq-body :global(var) { font: inherit; font-style: italic; }
+  .eq-body :global(sub) { font-size: 0.7em; }
+  .eq-n { color: var(--fg-3); font-size: 17px; }
+</style>

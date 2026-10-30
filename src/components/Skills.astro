@@ -1,0 +1,26 @@
+---
+import Section from './Section.astro';
+import { skills } from '../data/profile';
+---
+
+<Section id="skills" title="Skills">
+  <dl class="skills">
+    {skills.map((s) => (
+      <div>
+        <dt>{s.group}</dt>
+        <dd>{s.items}</dd>
+      </div>
+    ))}
+  </dl>
+</Section>
+
+<style>
+  .skills { margin: 0; max-width: var(--measure); }
+  .skills > div { display: grid; grid-template-columns: 190px minmax(0, 1fr); border-top: 1px solid var(--rule); padding-block: 13px; }
+  .skills > div:first-child { border-top: 0; padding-top: 4px; }
+  dt { font-weight: 700; padding-right: 20px; }
+  dd { margin: 0; color: var(--fg-2); }
+  @media (max-width: 640px) {
+    .skills > div { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

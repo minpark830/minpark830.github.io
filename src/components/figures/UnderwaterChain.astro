@@ -1,0 +1,40 @@
+---
+interface Props { labelledby: string }
+const { labelledby } = Astro.props;
+---
+<svg viewBox="0 0 440 200" role="img" aria-labelledby={labelledby}>
+  <rect class="d-box" x="9" y="22" width="98" height="46" rx="3"/>
+  <text class="d-title" x="58" y="42" text-anchor="middle">DHT11</text>
+  <text class="d-note" x="58" y="58" text-anchor="middle">sensor</text>
+  <path class="d-line d-arrow" d="M107 45H116"/>
+  <rect class="d-box" x="117" y="22" width="98" height="46" rx="3"/>
+  <text class="d-title" x="166" y="42" text-anchor="middle">Ultrasonic</text>
+  <text class="d-note" x="166" y="58" text-anchor="middle">transmitter</text>
+
+  <path class="d-thin" d="M221 37q3 -4 6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0"/>
+  <path class="d-line" d="M221 45q3 -4 6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0"/>
+  <path class="d-thin" d="M221 53q3 -4 6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0t6 0"/>
+  <path class="d-line d-arrow" d="M323 45H332"/>
+  <text class="d-note" x="274" y="82" text-anchor="middle">through water</text>
+
+  <rect class="d-box" x="333" y="22" width="98" height="46" rx="3"/>
+  <text class="d-title" x="382" y="42" text-anchor="middle">Ultrasonic</text>
+  <text class="d-note" x="382" y="58" text-anchor="middle">receiver</text>
+  <path class="d-line d-arrow" d="M382 68V127"/>
+
+  <rect class="d-box" x="333" y="128" width="98" height="46" rx="3"/>
+  <text class="d-title" x="382" y="148" text-anchor="middle">AGC</text>
+  <text class="d-note" x="382" y="164" text-anchor="middle">gain control</text>
+  <path class="d-line d-arrow" d="M333 151H324"/>
+  <rect class="d-box" x="225" y="128" width="98" height="46" rx="3"/>
+  <text class="d-title" x="274" y="148" text-anchor="middle">PLL tone</text>
+  <text class="d-note" x="274" y="164" text-anchor="middle">decoder</text>
+  <path class="d-line d-arrow" d="M225 151H216"/>
+  <rect class="d-box" x="117" y="128" width="98" height="46" rx="3"/>
+  <text class="d-title" x="166" y="148" text-anchor="middle">Raspberry Pi</text>
+  <text class="d-note" x="166" y="164" text-anchor="middle">server</text>
+  <path class="d-line d-arrow" d="M117 151H108"/>
+  <rect class="d-box" x="9" y="128" width="98" height="46" rx="3"/>
+  <text class="d-title" x="58" y="148" text-anchor="middle">Web page</text>
+  <text class="d-note" x="58" y="164" text-anchor="middle">live readings</text>
+</svg>

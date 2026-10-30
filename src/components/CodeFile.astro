@@ -1,0 +1,23 @@
+---
+// A source file, or an excerpt of one, with its name in a header bar.
+import { Code } from 'astro:components';
+
+interface Props {
+  file: string;
+  /** a short note on the right of the header, like "excerpt" or "C++17" */
+  note?: string;
+  /** link to the full file */
+  href?: string;
+  code: string;
+  lang: 'c' | 'cpp' | 'js' | 'ts' | 'python' | 'yaml';
+}
+const { file, note, href, code, lang } = Astro.props;
+---
+
+<div class="code">
+  <div class="code-head">
+    <span class="file">{href ? <a href={href}>{file}</a> : file}</span>
+    {note && <span>{note}</span>}
+  </div>
+  <Code code={code.trimEnd()} lang={lang} theme="css-variables" />
+</div>

@@ -1,0 +1,105 @@
+---
+title: Crazyflie swarm controller
+when: Sep 2024 – Jun 2025
+order: 2
+placement: card
+roles: [embedded, controls, software]
+card:
+  - A framework for flying Crazyflie micro-drones in formation. A FastAPI ground server relays commands and positions between a web page and a radio link to each drone, and each drone localizes on board with an extended Kalman filter on optical-flow and range data. Followers hold triangle and line formations around the leader.
+  - My Cal Poly senior project in the CPSquare lab with Nikolas Tambornini, flight-tested with three drones. I wrote the ground server, the leader's radio bridge, and the leader's firmware apps in C.
+stack: C on the Crazyflie firmware (FreeRTOS), Python, FastAPI, WebSockets, Crazyradio 2.0, Flow deck
+media:
+  kind: video
+  youtube: 4RDGtc2B57w
+  title: Crazyflie swarm controller demo
+  caption: The swarm flying in the lab.
+  poster:
+    src: /assets/video/swarm-1280.jpg
+    srcset: /assets/video/swarm-640.jpg 640w, /assets/video/swarm-1280.jpg 1280w
+    sizes: "(max-width: 900px) calc(100vw - 32px), 560px"
+    width: 1280
+    height: 720
+links:
+  - label: Source on GitHub
+    href: https://github.com/minpark830/CPSquare-crazyflie-firmware
+  - label: Read the report
+    href: https://digitalcommons.calpoly.edu/eesp/689/
+  - label: Watch on YouTube
+    href: https://www.youtube.com/watch?v=4RDGtc2B57w
+writeup:
+  sheet: 2
+  description: Three Crazyflie micro-drones flying in formation with no external positioning, coordinated through a FastAPI ground station. My Cal Poly senior project, including firmware apps in C on FreeRTOS.
+  facts:
+    - label: When
+      value: Sep 2024 – Jun 2025
+    - label: Team
+      value: Minwoo Park and Nikolas Tambornini, advised by Siavash Farzan
+    - label: My part
+      value: The ground server, the leader's radio bridge, and the leader's firmware apps
+    - label: Hardware
+      value: Three Crazyflie 2.x drones with Flow decks, one Crazyradio 2.0 each
+---
+
+import Video from '../../components/Video.astro';
+import Figure from '../../components/Figure.astro';
+import CodeFile from '../../components/CodeFile.astro';
+import poll from '../excerpts/appleader-poll.c?raw';
+
+<Video
+  youtube="4RDGtc2B57w"
+  title="Crazyflie swarm controller demo"
+  label="Video 1"
+  caption="The swarm flying in the lab."
+  poster={{ src: '/assets/video/swarm-1280.jpg', srcset: '/assets/video/swarm-640.jpg 640w, /assets/video/swarm-1280.jpg 1280w', sizes: '(max-width: 900px) calc(100vw - 32px), 760px', width: 1280, height: 720 }}
+  transitionName="media-swarm"
+/>
+
+## The goal
+
+A framework for coordinating several micro-drones in formation without external positioning such as motion capture. Each drone estimates its own position on board, a leader flies where the operator sends it, and followers keep their places relative to the leader. It was my senior project at Cal Poly, in the CPSquare cyber-physical systems lab, and the [report](https://digitalcommons.calpoly.edu/eesp/689/) covers it in full.
+
+## System
+
+<Figure
+  figure="swarm-system"
+  label="Figure 1"
+  captionId="f-system"
+  wide
+  caption="How commands and positions move. Each drone pairs with its own Crazyradio and a Python bridge; a FastAPI server on the ground laptop connects the bridges and the web page."
+/>
+
+A FastAPI server on a ground laptop is the hub. Each drone has its own Crazyradio 2.0 and a small Python bridge built on Bitcraze's cflib, and each bridge holds a WebSocket to the server.
+
+- The leader's bridge streams the leader's position to the server. When the web page sends a command to take off, land, or move, the bridge flies the leader with cflib's high-level commander; commands to form a line or a triangle pass through to the followers.
+- The server answers each message from a follower's bridge with the leader's latest position. The bridge sends its drone to that position plus an offset set by the formation, such as 0.5&#8239;m behind or to the side.
+- The web page sends commands over HTTP and plots all three drones in 3D.
+
+The report calls this design pseudo-peer-to-peer: each drone has its own radio link, and the server passes positions between them, so the laptop is a hop in every follower's loop.
+
+## Localization
+
+Nothing outside the drones measures where they are. Each one runs the Crazyflie's on-board extended Kalman filter, which fuses its IMU with the Flow deck's downward optical-flow sensor (PMW3901) and time-of-flight range sensor (VL53L1x).
+
+Each estimate starts at that drone's own takeoff point, so the drones take off from known spots on a 0.5&#8239;m grid, and those spots set part of the formation's spacing. To plot all three in the leader's frame, the ground station shifts each follower's estimate by its starting offset.
+
+## Firmware for drone-to-drone radio
+
+I also wrote the leader's firmware app for a version that takes the ground station out of the formation loop. The leader shares its position with the followers over the Crazyflie's peer-to-peer radio, and polls the followers one at a time over a token-ring protocol (DTR), relaying their positions to the ground over the app channel. This version targets a square formation; the triangle and line flights in Video 1 use the ground-relayed design above.
+
+The app is a FreeRTOS task built around a state machine. The polling part takes turns: the leader reports its own position, asks the first follower for its position, and waits for a reply with the right size, sender, and recipient before moving on to the next follower.
+
+<CodeFile
+  file="appleader.c"
+  note="excerpt"
+  href="https://github.com/minpark830/CPSquare-crazyflie-firmware/blob/ccf2a9b52374b853d3a21e837596dff6697ab711/examples/app_leader/src/appleader.c#L420-L448"
+  code={poll}
+  lang="c"
+/>
+
+## Results
+
+Flight-tested with three drones holding triangle and line formations (Video 1). The [report](https://digitalcommons.calpoly.edu/eesp/689/) describes the design and the test flights.
+
+## My part
+
+I wrote the FastAPI ground server, the leader's radio bridge, and the leader's firmware apps. Nikolas Tambornini wrote the followers' formation code, and we shared the follower app. The [source is on GitHub](https://github.com/minpark830/CPSquare-crazyflie-firmware), in the examples folder of the lab's copy of the Crazyflie firmware.

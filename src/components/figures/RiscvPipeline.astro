@@ -1,0 +1,36 @@
+---
+interface Props { labelledby: string }
+const { labelledby } = Astro.props;
+---
+<svg viewBox="0 0 440 200" role="img" aria-labelledby={labelledby}>
+  <rect class="d-box" x="22" y="28" width="68" height="48" rx="3"/>
+  <rect class="d-box" x="104" y="28" width="68" height="48" rx="3"/>
+  <rect class="d-box" x="186" y="28" width="68" height="48" rx="3"/>
+  <rect class="d-box" x="268" y="28" width="68" height="48" rx="3"/>
+  <rect class="d-box" x="350" y="28" width="68" height="48" rx="3"/>
+  <rect class="d-reg" x="94" y="22" width="6" height="60"/>
+  <rect class="d-reg" x="176" y="22" width="6" height="60"/>
+  <rect class="d-reg" x="258" y="22" width="6" height="60"/>
+  <rect class="d-reg" x="340" y="22" width="6" height="60"/>
+  <text class="d-title" x="56" y="49" text-anchor="middle">IF</text>
+  <text class="d-note" x="56" y="65" text-anchor="middle">fetch</text>
+  <text class="d-title" x="138" y="49" text-anchor="middle">ID</text>
+  <text class="d-note" x="138" y="65" text-anchor="middle">decode</text>
+  <text class="d-title" x="220" y="49" text-anchor="middle">EX</text>
+  <text class="d-note" x="220" y="65" text-anchor="middle">execute</text>
+  <text class="d-title" x="302" y="49" text-anchor="middle">MEM</text>
+  <text class="d-note" x="302" y="65" text-anchor="middle">memory</text>
+  <text class="d-title" x="384" y="49" text-anchor="middle">WB</text>
+  <text class="d-note" x="384" y="65" text-anchor="middle">write back</text>
+
+  <rect class="d-box" x="22" y="128" width="272" height="42" rx="3"/>
+  <text class="d-title" x="158" y="154" text-anchor="middle">Cache</text>
+  <rect class="d-box" x="304" y="128" width="114" height="42" rx="3"/>
+  <text class="d-title" x="361" y="146" text-anchor="middle">Peripheral I/O</text>
+  <text class="d-note" x="361" y="162" text-anchor="middle">memory-mapped</text>
+
+  <path class="d-line d-arrow" d="M56 127V77"/>
+  <path class="d-line d-arrow2" d="M288 77V127"/>
+  <text class="d-note" x="281" y="106" text-anchor="end">load / store</text>
+  <path class="d-line d-arrow2" d="M322 77V127"/>
+</svg>

@@ -1,0 +1,58 @@
+---
+// GitHub Pages serves this for any missing address, at any depth, so every
+// link and asset here is absolute. The unstable response is drawn at build
+// time; the page needs no script.
+import Base from '../layouts/Base.astro';
+import { sheetCount } from '../lib/sheets';
+
+let d = '';
+for (let i = 0; i <= 240; i++) {
+  const t = (i / 240) * 2.4;
+  const x = 8 + (544 * i) / 240;
+  const y = Math.max(-20, Math.min(220, 100 - Math.exp(1.25 * t) * Math.sin(2 * Math.PI * 1.9 * t) * 6));
+  d += `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`;
+}
+---
+
+<Base
+  title="Page not found, Minwoo Park"
+  description="This address doesn't match a page on Minwoo Park's site."
+  sheet={{ n: null, of: await sheetCount(), title: 'Page not found' }}
+  noindex
+>
+  <div class="wrap lost">
+    <p class="status">Error 404</p>
+    <h1>This page doesn't exist.</h1>
+    <p>The address may be mistyped, or the page may have moved. The home page links to everything on this site.</p>
+    <p class="actions">
+      <a class="btn btn-primary" href="/">Go to the home page</a>
+      <a href="/#projects">See the projects</a>
+    </p>
+    <figure>
+      <div class="scope" aria-hidden="true">
+        <svg viewBox="0 0 560 200">
+          <path class="grid" d="M8 50H552M8 150H552M144 8V192M280 8V192M416 8V192"></path>
+          <path class="axis" d="M8 100H552"></path>
+          <path class="target" d="M8 100H552"></path>
+          <path class="osc" d={d}></path>
+        </svg>
+      </div>
+      <figcaption><b>Figure 404.</b> Loop unstable. The response grows with every cycle instead of settling.</figcaption>
+    </figure>
+  </div>
+</Base>
+
+<style>
+  .lost { max-width: 760px; padding-top: 10vh; }
+  .status { color: var(--fg-3); font-size: 15px; margin: 0; }
+  h1 { font-size: clamp(36px, 6vw, 56px); line-height: 1.02; letter-spacing: -0.035em; margin: 8px 0 0; }
+  p { color: var(--fg-2); max-width: 56ch; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 20px; font-weight: 700; }
+  figure { margin-top: 36px; }
+  .scope { background: var(--scr-bg); border: 1px solid var(--scr-edge); border-radius: var(--radius-lg); padding: 12px; }
+  svg { display: block; width: 100%; height: auto; }
+  .grid { stroke: var(--scr-grid); stroke-width: 1; fill: none; }
+  .axis { stroke: var(--scr-grid-2); stroke-width: 1; }
+  .target { fill: none; stroke: var(--scr-magenta); stroke-width: 1.6; stroke-dasharray: 6 4; }
+  .osc { fill: none; stroke: var(--scr-amber); stroke-width: 2.2; stroke-linejoin: round; }
+</style>

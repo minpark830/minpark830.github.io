@@ -1,0 +1,89 @@
+---
+import Section from './Section.astro';
+import ProjectCard from './ProjectCard.astro';
+import { projects } from '../lib/sheets';
+import { roleIds, roleLabels, roleNotes } from '../data/site';
+
+const all = (await projects()).filter((p) => p.data.placement !== 'unlisted');
+const cards = all.filter((p) => p.data.placement === 'featured' || p.data.placement === 'card');
+const rows = all.filter((p) => p.data.placement === 'row');
+
+// Number drawings and videos in page order. Figure 1 is the servo above.
+let figures = 1;
+let videos = 0;
+const labels = new Map(
+  cards.map((p) => [p.id, p.data.media?.kind === 'video' ? `Video ${++videos}` : `Figure ${++figures}`]),
+);
+const count = (role: string) => all.filter((p) => p.data.roles.some((r) => r === role)).length;
+---
+
+<Section id="projects" title="Projects">
+  <p class="sec-lede">Selected work in embedded software, controls, hardware, and web apps.</p>
+
+  <!-- Without JavaScript the filter stays hidden and every project shows. -->
+  <fieldset class="filter no-print" id="role-filter" data-notes={JSON.stringify(roleNotes)} hidden>
+    <legend>Show projects for</legend>
+    <div class="choices">
+      <label><input type="radio" name="for" value="" checked /><span>All roles</span><span class="count">{all.length}</span></label>
+      {roleIds.map((r) => (
+        <label><input type="radio" name="for" value={r} /><span>{roleLabels[r]}</span><span class="count">{count(r)}</span></label>
+      ))}
+    </div>
+  </fieldset>
+  <p class="role-note" id="role-note" aria-live="polite"></p>
+
+  <div slot="after">
+    <div class="proj-grid" id="proj-grid">
+      {cards.map((p) => <ProjectCard entry={p} label={labels.get(p.id) ?? ''} />)}
+    </div>
+    {rows.length > 0 && (
+      <div class="more" id="more-projects">
+        <h3 class="sub">More projects</h3>
+        <ul class="rows">
+          {rows.map((p) => (
+            <li data-roles={p.data.roles.join(' ')}>
+              <span class="r-title">{p.data.title}</span>
+              <span class="when">{p.data.when}</span>
+              <span class="r-desc">{p.data.card.join(' ')}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+</Section>
+
+<style>
+  .filter { border: 0; padding: 0; margin: 24px 0 0; min-width: 0; }
+  legend { padding: 0; font-weight: 700; font-size: var(--fs-ui); margin-bottom: 10px; }
+  .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+  label {
+    position: relative; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px;
+    border: 1px solid var(--rule); border-radius: var(--radius); cursor: pointer;
+    font-size: var(--fs-ui); font-weight: 700; color: var(--fg); user-select: none;
+  }
+  label:hover { border-color: var(--fg); }
+  input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+  .count { color: var(--fg-3); font-weight: 400; font-variant-numeric: tabular-nums; }
+  label:has(input:checked) { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+  label:has(input:checked) .count { color: inherit; opacity: 0.75; }
+  label:has(input:focus-visible) { outline: 2px solid var(--sel); outline-offset: 2px; }
+  .role-note { margin: 12px 0 0; min-height: 1.6em; font-size: var(--fs-ui); color: var(--fg-2); max-width: 74ch; }
+
+  .proj-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 56px; row-gap: 0; margin-top: 36px;
+  }
+  .more { margin-left: calc(var(--rail) + var(--rail-gap)); max-width: var(--measure); }
+  .more .sub { margin-top: 8px; }
+
+  @media (max-width: 900px) {
+    .proj-grid { grid-template-columns: minmax(0, 1fr); margin-top: 28px; }
+    .more { margin-left: 0; }
+  }
+</style>
+
+<script>
+  import { mountRoleFilter } from '../scripts/role-filter';
+  mountRoleFilter();
+</script>

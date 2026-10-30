@@ -1,0 +1,141 @@
+---
+// A project write-up, laid out as one sheet of the drawing set: a header
+// with the facts, a rail listing the sections, and the text.
+import type { MarkdownHeading } from 'astro';
+import Base from './Base.astro';
+import { site } from '../data/site';
+import type { Project } from '../lib/sheets';
+
+interface Props {
+  entry: Project;
+  headings: MarkdownHeading[];
+  n: number;
+  of: number;
+  next: Project;
+}
+const { entry, headings, n, of, next } = Astro.props;
+const d = entry.data;
+const w = d.writeup;
+if (!w) throw new Error(`${entry.id} has no write-up`);
+
+const sections = headings.filter((h) => h.depth === 2);
+const url = new URL(`/projects/${entry.id}/`, Astro.site).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: d.title,
+  description: w.description,
+  url,
+  author: { '@type': 'Person', name: site.name, url: site.url },
+  about: d.stack,
+};
+---
+
+<Base
+  title={`${d.title}, by ${site.name}`}
+  description={w.description}
+  ogType="article"
+  sheet={{ n, of, title: d.title }}
+  jsonLd={jsonLd}
+>
+  <article class="sheet wrap">
+    <header class="sheet-head">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/#projects">Projects</a></li>
+          <li><span aria-current="page">{d.title}</span></li>
+        </ol>
+      </nav>
+      <h1>{d.title}</h1>
+      <p class="lede">{w.description}</p>
+      <dl class="facts">
+        {w.facts.map((f) => (
+          <div>
+            <dt>{f.label}</dt>
+            <dd>{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+      {d.links.length > 0 && (
+        <ul class="links">
+          {d.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+        </ul>
+      )}
+    </header>
+
+    <div class="sheet-grid">
+      <nav class="toc no-print" aria-labelledby="toc-title">
+        <div class="toc-inner">
+          <h2 id="toc-title">On this sheet</h2>
+          <ol>
+            {sections.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+          </ol>
+        </div>
+      </nav>
+      <div class="prose">
+        <slot />
+      </div>
+    </div>
+
+    <nav class="sheet-nav no-print" aria-label="More sheets">
+      <a class="next" href={`/projects/${next.id}/`} data-astro-prefetch>
+        <span>Next sheet</span>
+        {next.data.title}
+      </a>
+      <a class="all" href="/#projects">All projects</a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .sheet { padding-top: 40px; }
+  .sheet-head { max-width: 900px; }
+  .crumbs ol { display: flex; flex-wrap: wrap; gap: 4px 0; list-style: none; margin: 0; padding: 0; font-size: var(--fs-ui); }
+  .crumbs li + li::before { content: '/'; margin: 0 10px; color: var(--fg-3); }
+  .crumbs [aria-current] { color: var(--fg-3); }
+  h1 {
+    font-size: clamp(38px, 5.4vw, 64px); line-height: 1; letter-spacing: -0.04em;
+    margin: 18px 0 0 -0.03em;
+  }
+  .lede { font-size: var(--fs-lede); line-height: 1.6; max-width: 62ch; margin: 18px 0 0; }
+
+  /* the facts, set like a drawing's title block */
+  .facts {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin: 28px 0 0; border: 1px solid var(--fg);
+  }
+  .facts > div { padding: 8px 12px 10px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin: 0 -1px -1px 0; }
+  dt { font-size: 11.5px; color: var(--fg-3); }
+  dd { margin: 2px 0 0; font-size: var(--fs-ui); color: var(--fg); }
+  .links { margin-top: 18px; }
+
+  .sheet-grid {
+    display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); column-gap: var(--rail-gap);
+    margin-top: 56px; border-top: 1px solid var(--fg); padding-top: 8px;
+  }
+  .toc-inner { position: sticky; top: calc(var(--nav-h) + 24px); padding-top: 14px; }
+  .toc h2 { font-size: var(--fs-ui); margin: 0 0 8px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; font-size: var(--fs-ui); }
+  .toc li + li { margin-top: 6px; }
+  .toc a { color: var(--fg-2); text-decoration: none; }
+  .toc a:hover { color: var(--fg); text-decoration: underline; }
+  .prose { padding-top: 0; }
+  .prose > :global(:first-child) { margin-top: 14px; }
+
+  .sheet-nav {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px 32px;
+    margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule);
+  }
+  .next { font-size: 20px; font-weight: 700; text-decoration: none; color: var(--fg); }
+  .next span { display: block; font-size: var(--fs-ui); font-weight: 400; color: var(--fg-3); }
+  .next:hover { text-decoration: underline; text-decoration-color: var(--sel); }
+  .all { font-weight: 700; }
+
+  @media (max-width: 900px) {
+    .sheet-grid { grid-template-columns: minmax(0, 1fr); margin-top: 40px; }
+    .toc-inner { position: static; padding-bottom: 8px; border-bottom: 1px solid var(--rule); }
+  }
+  @media (max-width: 640px) {
+    .sheet { padding-top: 24px; }
+  }
+</style>

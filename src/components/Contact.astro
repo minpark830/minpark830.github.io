@@ -1,0 +1,61 @@
+---
+import Section from './Section.astro';
+import { site } from '../data/site';
+---
+
+<Section id="contact" title="Contact">
+  <p class="lede">
+    Email is the fastest way to reach me. I'm happy to talk about any software, electrical, or controls engineering
+    role, or about anything on this page.
+  </p>
+  <div class="email-row">
+    <a class="email" id="email" href={`mailto:${site.email}`}>{site.email}</a>
+    <button type="button" class="btn-text no-print" id="copy-email" data-copy={site.email}>Copy address</button>
+  </div>
+  <ul class="links">
+    <li><a href={site.resume} target="_blank" rel="noopener">Resume (PDF)</a></li>
+    <li><a href={site.github}>GitHub</a></li>
+    <li><a href={site.linkedin}>LinkedIn</a></li>
+  </ul>
+</Section>
+
+<style>
+  .lede { max-width: 56ch; margin: 0; font-size: var(--fs-lede); }
+  .email-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 22px; }
+  .email {
+    font-size: clamp(21px, 3.3vw, 36px); font-weight: 700; letter-spacing: -0.02em;
+    color: var(--fg); text-decoration: none; overflow-wrap: anywhere;
+  }
+  .email:hover { text-decoration: underline; text-decoration-color: var(--sel); }
+  .links { margin-top: 20px; }
+  @media (max-width: 640px) {
+    .lede { font-size: 16px; }
+  }
+</style>
+
+<script>
+  // Copy the address, or select it where the clipboard is unavailable.
+  const btn = document.getElementById('copy-email');
+  const email = document.getElementById('email');
+  let timer: number | undefined;
+  const done = (msg: string) => {
+    if (!btn) return;
+    btn.textContent = msg;
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => (btn.textContent = 'Copy address'), 2200);
+  };
+  const select = () => {
+    if (!email) return;
+    const range = document.createRange();
+    range.selectNodeContents(email);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    done('Address selected');
+  };
+  btn?.addEventListener('click', () => {
+    const text = btn.dataset['copy'] ?? '';
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => done('Copied'), select);
+    else select();
+  });
+</script>

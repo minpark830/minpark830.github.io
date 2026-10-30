@@ -1,0 +1,108 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import TitleBlock from '../components/TitleBlock.astro';
+import type { Sheet } from '../lib/sheets';
+import { site } from '../data/site';
+
+interface Props {
+  /** the document title */
+  title: string;
+  description: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogType?: 'profile' | 'article' | 'website';
+  /** true for pages search engines should skip, like the 404 page */
+  noindex?: boolean;
+  /** this page's place in the set of sheets, for the title block */
+  sheet: Sheet;
+  jsonLd?: Record<string, unknown>;
+  /** the home page links to its own sections; other pages link back to them */
+  home?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogTitle = title,
+  ogDescription = description,
+  ogType = 'website',
+  noindex = false,
+  sheet,
+  jsonLd,
+  home = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/assets/og-image.png', Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={site.name} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f161c" media="(prefers-color-scheme: dark)" />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={site.ogImageAlt} />
+    {ogType === 'profile' && <meta property="profile:first_name" content={site.givenName} />}
+    {ogType === 'profile' && <meta property="profile:last_name" content={site.familyName} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preload" href="/assets/fonts/b612-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/b612-700.woff2" as="font" type="font/woff2" crossorigin />
+
+    <script is:inline>
+      // Apply a saved theme before first paint, so the page never flashes.
+      try {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    </script>
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <!-- Arrowhead shared by every diagram on the page -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path class="arrowhead" d="M0 0L10 5L0 10z"></path>
+        </marker>
+        <marker id="arrow-target" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path class="arrowhead-target" d="M0 0L10 5L0 10z"></path>
+        </marker>
+        <marker id="arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path class="arrowhead-ok" d="M0 0L10 5L0 10z"></path>
+        </marker>
+      </defs>
+    </svg>
+
+    <Nav home={home} />
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="wrap">
+      <TitleBlock sheet={sheet} />
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+---
+interface Props { labelledby: string }
+const { labelledby } = Astro.props;
+---
+<svg viewBox="0 0 440 200" role="img" aria-labelledby={labelledby}>
+  <rect class="d-box" x="9" y="24" width="124" height="46" rx="3"/>
+  <text class="d-title" x="71" y="44" text-anchor="middle">Circuits</text>
+  <text class="d-note" x="71" y="60" text-anchor="middle">foundations</text>
+  <path class="d-line d-arrow" d="M133 47H157"/>
+  <rect class="d-box" x="158" y="24" width="124" height="46" rx="3"/>
+  <text class="d-title" x="220" y="44" text-anchor="middle">RC response</text>
+  <text class="d-note" x="220" y="60" text-anchor="middle">and filters</text>
+  <path class="d-line d-arrow" d="M282 47H306"/>
+  <rect class="d-box" x="307" y="24" width="124" height="46" rx="3"/>
+  <text class="d-title" x="369" y="44" text-anchor="middle">BJTs</text>
+  <text class="d-note" x="369" y="60" text-anchor="middle">building blocks</text>
+  <path class="d-line d-arrow" d="M369 70V127"/>
+
+  <rect class="d-box" x="307" y="128" width="124" height="46" rx="3"/>
+  <text class="d-title" x="369" y="148" text-anchor="middle">MOSFETs</text>
+  <text class="d-note" x="369" y="164" text-anchor="middle">and CMOS</text>
+  <path class="d-line d-arrow" d="M307 151H283"/>
+  <rect class="d-box" x="158" y="128" width="124" height="46" rx="3"/>
+  <text class="d-title" x="220" y="148" text-anchor="middle">Digital logic</text>
+  <text class="d-note" x="220" y="164" text-anchor="middle">and timing</text>
+  <path class="d-line d-arrow" d="M158 151H134"/>
+  <rect class="d-box" x="9" y="128" width="124" height="46" rx="3"/>
+  <text class="d-title" x="71" y="148" text-anchor="middle">HDL</text>
+  <text class="d-note" x="71" y="164" text-anchor="middle">expressions</text>
+</svg>

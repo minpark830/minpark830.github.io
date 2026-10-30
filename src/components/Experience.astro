@@ -1,0 +1,36 @@
+---
+import Section from './Section.astro';
+import { earlierRoles, jobs } from '../data/experience';
+---
+
+<Section id="experience" title="Experience">
+  {jobs.map((job) => (
+    <article class="entry" id={job.id}>
+      <div class="entry-head">
+        <h3>{job.org}</h3>
+        <span class="when">{job.when}</span>
+      </div>
+      <p class="role-line">{job.role}, {job.place}</p>
+      <ul>{job.bullets.map((b) => <li>{b}</li>)}</ul>
+      {job.techniques && <p class="focus"><b>Techniques:</b> {job.techniques}</p>}
+      {job.writeup && (
+        <p class="focus"><a href={job.writeup.href} data-astro-prefetch>{job.writeup.label}</a></p>
+      )}
+    </article>
+  ))}
+
+  <h3 class="sub">Teaching and earlier roles</h3>
+  <ul class="rows">
+    {earlierRoles.map((r) => (
+      <li>
+        <span class="r-title">{r.title}</span>
+        <span class="when">{r.when}</span>
+        <span class="r-desc">{r.desc}</span>
+      </li>
+    ))}
+  </ul>
+</Section>
+
+<style>
+  .entry:target h3 { text-decoration: underline; text-decoration-color: var(--sel); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+</style>

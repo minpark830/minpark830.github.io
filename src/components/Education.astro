@@ -1,0 +1,49 @@
+---
+import Section from './Section.astro';
+import { coursework, facts, schools } from '../data/profile';
+---
+
+<Section id="education" title="Education">
+  {schools.map((s) => (
+    <article class="entry">
+      <div class="entry-head">
+        <h3>{s.name}</h3>
+        <span class="when">{s.when}</span>
+      </div>
+      <p class="role-line">{s.degree}</p>
+      {s.notes?.map((n) => <p class="focus"><b>{n.label}:</b> <Fragment set:html={n.html} /></p>)}
+    </article>
+  ))}
+
+  <h3 class="sub">Relevant coursework</h3>
+  <div class="course-grid">
+    {coursework.map((c) => (
+      <div>
+        <h4>{c.group}</h4>
+        <p>{c.courses}</p>
+      </div>
+    ))}
+  </div>
+
+  <dl class="facts">
+    {facts.map((f) => (
+      <div>
+        <dt>{f.label}</dt>
+        <dd>{f.value}</dd>
+      </div>
+    ))}
+  </dl>
+</Section>
+
+<style>
+  .course-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 36px; margin-top: 14px; max-width: var(--measure); }
+  h4 { margin: 0; font-size: var(--fs-ui); }
+  .course-grid p { margin: 2px 0 0; font-size: var(--fs-ui); color: var(--fg-2); }
+  .facts { margin: 36px 0 0; max-width: var(--measure); }
+  .facts > div { display: grid; grid-template-columns: 190px minmax(0, 1fr); padding-block: 10px; border-top: 1px solid var(--rule); }
+  dt { font-weight: 700; padding-right: 20px; }
+  dd { margin: 0; color: var(--fg-2); }
+  @media (max-width: 640px) {
+    .course-grid, .facts > div { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

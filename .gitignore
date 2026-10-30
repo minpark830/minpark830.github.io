@@ -1,0 +1,16 @@
+# dependencies and build output
+node_modules/
+dist/
+.astro/
+
+# test and audit reports
+test-results/
+playwright-report/
+blob-report/
+.lighthouseci/
+tests/cpp/build/
+
+# local files
+.DS_Store
+*.log
+.env*

@@ -1,0 +1,41 @@
+---
+// A numbered drawing with its caption. Wide drawings keep their size and
+// scroll sideways on small screens, so their labels stay readable.
+import { figures } from './figures';
+import type { FigureId } from './figures/ids';
+
+interface Props {
+  figure: FigureId;
+  /** "Figure 2" */
+  label: string;
+  caption: string;
+  /** id for the caption, which also names the drawing for screen readers */
+  captionId: string;
+  wide?: boolean;
+  /** shared with the same drawing on another page, for page transitions */
+  transitionName?: string | undefined;
+}
+const { figure, label, caption, captionId, wide = false, transitionName } = Astro.props;
+const Drawing = figures[figure];
+---
+
+<figure>
+  <div
+    class:list={['frame', { 'frame-wide': wide }]}
+    style={transitionName ? { viewTransitionName: transitionName } : undefined}
+    {...(wide ? { tabindex: 0, role: 'region', 'aria-labelledby': captionId } : {})}
+  >
+    <Drawing labelledby={captionId} />
+  </div>
+  <figcaption id={captionId}><b>{label}.</b> {caption}{wide && <span class="hint"> Swipe sideways to see the whole drawing.</span>}</figcaption>
+</figure>
+
+<style>
+  .frame-wide { aspect-ratio: auto; overflow-x: auto; }
+  .frame-wide :global(svg) { position: static; display: block; width: 100%; height: auto; padding: 14px 12px; }
+  .hint { display: none; }
+  @media (max-width: 640px) {
+    .frame-wide :global(svg) { min-width: 580px; }
+    .hint { display: inline; }
+  }
+</style>

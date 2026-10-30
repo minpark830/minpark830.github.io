@@ -1,0 +1,129 @@
+---
+import { site } from '../data/site';
+
+interface Props {
+  home?: boolean;
+}
+const { home = false } = Astro.props;
+
+const sections = [
+  ['experience', 'Experience'],
+  ['projects', 'Projects'],
+  ['skills', 'Skills'],
+  ['education', 'Education'],
+  ['contact', 'Contact'],
+] as const;
+---
+
+<header class="nav no-print" id="top">
+  <div class="wrap nav-inner">
+    <a class="brand" href={home ? '#top' : '/'}>{site.name}</a>
+    <nav aria-label="Sections">
+      <ul>
+        {sections.map(([id, label]) => <li><a href={home ? `#${id}` : `/#${id}`}>{label}</a></li>)}
+      </ul>
+    </nav>
+    <a class="nav-resume" href={site.resume} target="_blank" rel="noopener">Resume</a>
+    <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch to dark theme" title="Switch theme">
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+        <path d="M10 2.75a7.25 7.25 0 0 1 0 14.5z" fill="currentColor"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+    view-transition-name: site-nav;
+  }
+  .nav-inner { display: flex; align-items: center; gap: 28px; min-height: 56px; }
+  .brand { color: var(--fg); font-weight: 700; text-decoration: none; letter-spacing: -0.01em; white-space: nowrap; }
+  nav { margin-left: auto; }
+  ul { display: flex; gap: 26px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  ul a { color: var(--fg-2); text-decoration: none; font-size: var(--fs-ui); padding-block: 6px; }
+  ul a:hover { color: var(--fg); }
+  ul a[aria-current='location'] {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--sel);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 8px;
+  }
+  .nav-resume {
+    display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+    border: 1px solid var(--rule); border-radius: var(--radius);
+    color: var(--fg); font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap;
+  }
+  .nav-resume:hover { border-color: var(--fg); }
+  .theme-btn {
+    display: inline-grid; place-items: center; width: 32px; height: 32px; margin-left: -16px; padding: 0;
+    border: 1px solid var(--rule); border-radius: var(--radius); background: transparent; color: var(--fg);
+    cursor: pointer;
+  }
+  .theme-btn:hover { border-color: var(--fg); }
+  .theme-btn svg { width: 16px; height: 16px; }
+  /* On narrow screens the sections move to a second row that scrolls sideways. */
+  @media (max-width: 900px) {
+    .nav-inner { flex-wrap: wrap; column-gap: 12px; row-gap: 0; }
+    .brand { margin-right: auto; min-height: 56px; display: inline-flex; align-items: center; }
+    .theme-btn { margin-left: 0; }
+    nav {
+      order: 3; flex-basis: calc(100% + 2 * var(--gutter)); margin: 0 calc(-1 * var(--gutter));
+      overflow-x: auto; scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    ul { margin: 0; padding: 0 var(--gutter) 9px; gap: 22px; }
+    ul a { white-space: nowrap; font-size: 14px; }
+  }
+</style>
+
+<script>
+  // Theme toggle: follows the system until the visitor picks one.
+  const root = document.documentElement;
+  const btn = document.getElementById('theme-btn');
+  const dark = window.matchMedia('(prefers-color-scheme: dark)');
+  const current = () => {
+    const t = root.getAttribute('data-theme');
+    return t === 'dark' || t === 'light' ? t : dark.matches ? 'dark' : 'light';
+  };
+  const label = () =>
+    btn?.setAttribute('aria-label', current() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  btn?.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('theme', next);
+    } catch {
+      // storage can be off; the choice then lasts for this page only
+    }
+    label();
+  });
+  dark.addEventListener('change', label);
+  label();
+
+  // On the home page, mark the section in view.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.nav ul a[href^="#"]')];
+  if (links.length && 'IntersectionObserver' in window) {
+    const byId = new Map(links.map((a) => [a.hash.slice(1), a]));
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          links.forEach((a) => a.removeAttribute('aria-current'));
+          byId.get(e.target.id)?.setAttribute('aria-current', 'location');
+        }
+      },
+      { rootMargin: '-40% 0px -55% 0px' },
+    );
+    byId.forEach((_a, id) => {
+      const s = document.getElementById(id);
+      if (s) io.observe(s);
+    });
+  }
+</script>

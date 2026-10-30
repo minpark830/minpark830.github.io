@@ -1,0 +1,33 @@
+---
+// The three GitHub Actions workflows that run on every push and pull
+// request to main.
+interface Props { labelledby: string }
+const { labelledby } = Astro.props;
+const lanes = [
+  { y: 44, name: 'CI checks', steps: [['Lint', 'ESLint, Prettier'], ['Build', 'Vite, production'], ['Status check', 'pass or fail on PR']] },
+  { y: 128, name: 'Front end', steps: [['Build', 'React app'], ['Deploy', 'Static Web Apps'], ['Preview', 'per pull request']] },
+  { y: 212, name: 'API', steps: [['Package', 'Flask app, zip'], ['Sign in', 'Azure, via OIDC'], ['Deploy', 'Azure App Service']] },
+];
+const cols = [164, 326, 488];
+---
+<svg viewBox="0 0 640 240" role="img" aria-labelledby={labelledby}>
+  <rect class="d-box-2" x="8" y="104" width="114" height="48" rx="3"/>
+  <text class="d-title" x="65" y="124" text-anchor="middle">Push or PR</text>
+  <text class="d-note" x="65" y="140" text-anchor="middle">to main</text>
+  <path class="d-line" d="M122 128H142M142 44V212"/>
+  <circle class="d-dot" cx="142" cy="128" r="3"/>
+  {lanes.map((lane) => (
+    <g>
+      <path class="d-line d-arrow" d={`M142 ${lane.y}H${cols[0]}`}/>
+      <text class="d-note" x={cols[0]} y={lane.y - 30}>{lane.name}</text>
+      {lane.steps.map(([title, note], i) => (
+        <g>
+          <rect class="d-box" x={cols[i]} y={lane.y - 22} width="136" height="44" rx="3"/>
+          <text class="d-title" x={(cols[i] ?? 0) + 68} y={lane.y - 3} text-anchor="middle">{title}</text>
+          <text class="d-note" x={(cols[i] ?? 0) + 68} y={lane.y + 13} text-anchor="middle">{note}</text>
+          {i < 2 && <path class="d-line d-arrow" d={`M${(cols[i] ?? 0) + 136} ${lane.y}H${cols[i + 1]}`}/>}
+        </g>
+      ))}
+    </g>
+  ))}
+</svg>

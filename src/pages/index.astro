@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Experience from '../components/Experience.astro';
+import Projects from '../components/Projects.astro';
+import Skills from '../components/Skills.astro';
+import Education from '../components/Education.astro';
+import Contact from '../components/Contact.astro';
+import { site } from '../data/site';
+import { sheetCount } from '../lib/sheets';
+
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  jobTitle: 'Embedded Software and Controls Engineer',
+  email: `mailto:${site.email}`,
+  url: site.url,
+  sameAs: [site.github, site.linkedin],
+  alumniOf: [
+    { '@type': 'CollegeOrUniversity', name: 'University of Pennsylvania' },
+    { '@type': 'CollegeOrUniversity', name: 'California Polytechnic State University, San Luis Obispo' },
+  ],
+  knowsAbout: ['Embedded software', 'C++', 'Control systems', 'Servo control', 'Trajectory planning', 'Kalman filtering', 'Robotics', 'FPGA design'],
+};
+---
+
+<Base
+  title={site.name}
+  description={site.description}
+  ogTitle={site.ogTitle}
+  ogDescription={site.ogDescription}
+  ogType="profile"
+  sheet={{ n: 1, of: await sheetCount(), title: 'Overview' }}
+  jsonLd={person}
+  home
+>
+  <Hero />
+  <Experience />
+  <Projects />
+  <Skills />
+  <Education />
+  <Contact />
+</Base>

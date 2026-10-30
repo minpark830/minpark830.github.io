@@ -1,0 +1,59 @@
+---
+// Block diagram of the loop in Figure 1 on the home page. Setpoint in
+// magenta and measured position in green, as on the scope.
+interface Props { labelledby: string }
+const { labelledby } = Astro.props;
+---
+<svg viewBox="0 0 640 232" role="img" aria-labelledby={labelledby}>
+  <rect class="d-group" x="36" y="32" width="346" height="164" rx="3"/>
+  <text class="d-note" x="44" y="50">pid.hpp, every 1 ms</text>
+
+  <path class="d-target d-arrow-target" d="M8 86H50"/>
+  <text class="d-sym" x="14" y="78">r</text>
+  <circle class="d-box" cx="62" cy="86" r="11"/>
+  <text class="d-note" x="44" y="80" text-anchor="end">+</text>
+  <text class="d-note" x="70" y="114">−</text>
+
+  <path class="d-line d-arrow" d="M73 86H96"/>
+  <text class="d-sym" x="80" y="78">e</text>
+  <rect class="d-box" x="96" y="64" width="130" height="44" rx="3"/>
+  <text class="d-math" x="161" y="84" text-anchor="middle">K<tspan dy="3" font-size="10">p</tspan><tspan dy="-3"> e + K</tspan><tspan dy="3" font-size="10">i</tspan><tspan dy="-3"> ∫e dt</tspan></text>
+  <text class="d-note" x="161" y="99" text-anchor="middle">with anti-windup</text>
+
+  <path class="d-line d-arrow" d="M226 86H250"/>
+  <circle class="d-box" cx="262" cy="86" r="11"/>
+  <text class="d-note" x="244" y="80" text-anchor="end">+</text>
+  <text class="d-note" x="270" y="114">−</text>
+
+  <path class="d-line d-arrow" d="M273 86H296"/>
+  <rect class="d-box" x="296" y="64" width="64" height="44" rx="3"/>
+  <path class="d-line" d="M305 98H315L341 74H351"/>
+  <text class="d-note" x="328" y="124" text-anchor="middle">limit ±1</text>
+
+  <path class="d-line d-arrow" d="M360 86H406"/>
+  <text class="d-sym" x="389" y="78">u</text>
+  <circle class="d-box" cx="418" cy="86" r="11"/>
+  <text class="d-note" x="402" y="102" text-anchor="end">+</text>
+  <path class="d-line d-arrow" d="M418 30V74"/>
+  <text class="d-sym" x="426" y="40">d</text>
+  <text class="d-note" x="438" y="40">load</text>
+  <text class="d-note" x="426" y="70">−</text>
+
+  <path class="d-line d-arrow" d="M429 86H450"/>
+  <rect class="d-box" x="450" y="64" width="120" height="44" rx="3"/>
+  <text class="d-math" x="510" y="84" text-anchor="middle">K / s(τs + 1)</text>
+  <text class="d-note" x="510" y="99" text-anchor="middle">motor and load</text>
+  <text class="d-note" x="510" y="124" text-anchor="middle">simulated with RK4</text>
+
+  <path class="d-ok d-arrow-ok" d="M570 86H632"/>
+  <text class="d-sym" x="608" y="78">θ</text>
+  <circle class="d-dot-ok" cx="594" cy="86" r="3"/>
+  <path class="d-ok d-arrow-ok" d="M594 86V152H368"/>
+  <circle class="d-dot-ok" cx="594" cy="152" r="3"/>
+  <path class="d-ok d-arrow-ok" d="M594 152V214H62V97"/>
+
+  <rect class="d-box" x="232" y="130" width="136" height="44" rx="3"/>
+  <text class="d-math" x="300" y="150" text-anchor="middle">K<tspan dy="3" font-size="10">d</tspan><tspan dy="-3"> s / (t</tspan><tspan dy="3" font-size="10">f</tspan><tspan dy="-3"> s + 1)</tspan></text>
+  <text class="d-note" x="300" y="165" text-anchor="middle">derivative of θ, filtered</text>
+  <path class="d-line d-arrow" d="M262 130V97"/>
+</svg>

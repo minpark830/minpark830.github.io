@@ -1,0 +1,93 @@
+---
+title: How the live servo works
+when: Oct 2026
+order: 0
+placement: unlisted
+roles: [controls, embedded, software]
+card:
+  - A motor-driven position servo under discrete PID control, simulated in the browser at 1 kHz.
+stack: TypeScript, C++17, Vitest, Playwright
+writeup:
+  sheet: 4
+  description: How the servo on the home page is modeled and controlled, the three requirements it is checked against, and how the browser model is tested against the C++ controller it displays.
+  facts:
+    - label: Plant
+      value: DC motor position servo, τ = 0.1 s, |u| ≤ 1
+    - label: Controller
+      value: Discrete PID at 1 kHz, firmware/pid.hpp
+    - label: Browser model
+      value: src/lib/servo.ts, a line-for-line port
+    - label: Checked by
+      value: Vitest, g++, Playwright, axe, Lighthouse
+---
+
+import Figure from '../../components/Figure.astro';
+import CodeFile from '../../components/CodeFile.astro';
+import Eq from '../../components/Eq.astro';
+import pid from '../../../firmware/pid.hpp?raw';
+
+<Figure
+  figure="servo-loop"
+  label="Figure 1"
+  captionId="f-loop"
+  wide
+  caption="The loop simulated on the home page. The controller, in the dashed box, runs once a millisecond; between samples the motor is integrated with a Runge–Kutta step. Setpoint in magenta, measured position in green, as on the scope."
+/>
+
+The [live servo on the home page](/#bench) runs this loop in your browser. The setpoint <var>r</var> steps from 0 to 1&#8239;rad at 0.1&#8239;s and back to 0 at 1.1&#8239;s. A constant load <var>d</var> arrives at 0.6&#8239;s, halfway through the step, so one run shows tracking, settling, and holding against a disturbance.
+
+## The plant
+
+The motor is the textbook position servo: a speed that lags the command with time constant <var>τ</var>, integrated to an angle.
+
+<Eq n={1}>d<var>θ</var>/d<var>t</var> = <var>ω</var>,&emsp; <var>τ</var> d<var>ω</var>/d<var>t</var> = −<var>ω</var> + <var>K</var> (<var>u</var> − <var>d</var>)</Eq>
+
+With <var>τ</var> = 0.1&#8239;s and <var>K</var> = 10&#8239;rad/s per unit of command, the transfer function is <span class="m"><var>K</var> / <var>s</var>(<var>τs</var> + 1)</span>. The free integrator means a constant setpoint needs no steady command, but a constant load does. The command is limited to <span class="m">|<var>u</var>| ≤ 1</span>, the model's only nonlinearity, and the load of 0.3 takes almost a third of it.
+
+Between controller samples the command is held, and the simulation advances the motor with one fourth-order Runge–Kutta step per millisecond. A unit test compares that with the exact solution for a held command: with the default gains, the two agree to within 10<sup>−10</sup>&#8239;rad.
+
+## The controller
+
+<CodeFile file="firmware/pid.hpp" note="C++17, compiled in CI" href="https://github.com/minpark830/minpark830.github.io/blob/main/firmware/pid.hpp" code={pid} lang="cpp" />
+
+Three details make it behave like a loop on real hardware rather than a textbook one:
+
+- **The derivative acts on the measurement.** It differentiates −<var>θ</var> instead of the error, so a step in the setpoint doesn't kick the motor. At the instant of the step only the proportional term reacts, and a unit test checks that.
+- **The derivative is filtered.** Differencing a measured angle amplifies sensor noise, so the derivative passes through a first-order low-pass filter with <var>t</var><sub>f</sub> = 5&#8239;ms. Turn on sensor noise in the live servo to see what is left of it in the motor command.
+- **The integrator can't wind up.** While the command is saturated in the direction of the error, the integrator stops accumulating, so it has nothing extra to unwind when the motor catches up.
+
+The filtered derivative is discretized with backward Euler. With <span class="m"><var>a</var> = <var>t</var><sub>f</sub> / (<var>t</var><sub>f</sub> + <var>t</var><sub>s</sub>)</span>, each sample computes
+
+<Eq n={2}><var>D</var>[<var>k</var>] = <var>a</var> <var>D</var>[<var>k</var> − 1] − (1 − <var>a</var>) <var>K</var><sub>d</sub> (<var>θ</var>[<var>k</var>] − <var>θ</var>[<var>k</var> − 1]) / <var>t</var><sub>s</sub></Eq>
+
+## The requirements
+
+| Requirement | Limit | Default gains |
+| --- | --- | --- |
+| Overshoot of the 1&#8239;rad step | 5% | 2.7% |
+| Time to settle within 2% | 0.30&#8239;s | 0.26&#8239;s |
+| Error 0.5&#8239;s after the load arrives | 1% | 0.51% |
+
+The default gains, <var>K</var><sub>p</sub> = 15, <var>K</var><sub>i</sub> = 35, and <var>K</var><sub>d</sub> = 0.4, pass all three.
+
+The third requirement is why the loop needs integral action. At rest the motor command has to cancel the load, <span class="m"><var>u</var> = <var>d</var></span>, and without an integrator that command can only come from the error:
+
+<Eq n={3}><var>e</var> = <var>d</var> / <var>K</var><sub>p</sub> = 0.3 / 15 = 2%</Eq>
+
+Set <var>K</var><sub>i</sub> to zero in the live servo and the readout shows just that. A unit test checks the same number.
+
+## The tuning hints
+
+Under the scope, the live servo suggests one change at a time, in a fixed order: reach the target, then stop the overshoot with <var>K</var><sub>d</sub>, then hold against the load with <var>K</var><sub>i</sub>, then speed up with <var>K</var><sub>p</sub>. A unit test starts from 300 random sets of gains, follows the hints a notch at a time, and checks that every run ends with all three requirements passing.
+
+## How it is tested
+
+GitHub Actions builds the site, and a change deploys only if every check passes.
+
+- **The model.** Vitest checks the default response against the numbers above, the 2% error without integral action, the derivative at a setpoint step, the actuator limits, and the tuning hints.
+- **The C++.** The workflow compiles `firmware/pid.hpp` with g++ and `-Wall -Wextra -Wpedantic -Werror`, runs it against the same motor, and compares the two step responses sample by sample. They agree to within 10<sup>−7</sup>&#8239;rad, about the size of float rounding, and the test fails above 10<sup>−6</sup>&#8239;rad. It also compiles `control_loop.cpp` against a stand-in for the STM32 header.
+- **The page.** Playwright moves the sliders and checks the readouts, the hints, and the `gains.hpp` block; axe checks accessibility in the light and dark themes; and Lighthouse holds the page to performance and size budgets.
+
+## Limits of the model
+
+It is a teaching model. A real servo also has friction, backlash, encoder quantization, a current loop, and limits on rate as well as amplitude, and its gains would come from a model identified from measured data. The live servo is there to show the structure of the loop and the trade-offs between the three gains.

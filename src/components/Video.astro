@@ -1,0 +1,92 @@
+---
+// A local poster that swaps to the YouTube player only when pressed, so the
+// page makes no requests to YouTube until a visitor asks for the video.
+interface Props {
+  youtube: string;
+  title: string;
+  label: string;
+  caption: string;
+  poster: { src: string; srcset?: string | undefined; sizes?: string | undefined; width: number; height: number };
+  transitionName?: string | undefined;
+}
+const { youtube, title, label, caption, poster, transitionName } = Astro.props;
+const watch = `https://www.youtube.com/watch?v=${youtube}`;
+---
+
+<figure>
+  <div class="video" data-yt={youtube} data-title={title} style={transitionName ? { viewTransitionName: transitionName } : undefined}>
+    <a class="video-link" href={watch} aria-label={`Play video: ${title}`}>
+      <span class="poster" style={{ '--ar': `${poster.width} / ${poster.height}` }}>
+        <img
+          src={poster.src}
+          srcset={poster.srcset}
+          sizes={poster.sizes}
+          width={poster.width}
+          height={poster.height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      </span>
+      <span class="play" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M8 5.2v13.6L19 12z"></path></svg>
+      </span>
+    </a>
+  </div>
+  <figcaption><b>{label}.</b> {caption}</figcaption>
+</figure>
+
+<style>
+  .video {
+    position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius);
+    background-color: var(--scr-bg);
+    background-image:
+      linear-gradient(var(--scr-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--scr-grid) 1px, transparent 1px);
+    background-size: 22px 22px;
+    background-position: center;
+  }
+  .video::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    border: 1px solid var(--scr-edge); border-radius: inherit;
+  }
+  .video-link { position: absolute; inset: 0; display: block; color: var(--scr-fg); }
+  .video-link:focus-visible { outline: 2px solid var(--scr-fg); outline-offset: -5px; border-radius: 3px; }
+  .poster {
+    position: absolute; top: 0; left: 50%; height: 100%; max-width: 100%;
+    aspect-ratio: var(--ar, 16 / 9); transform: translateX(-50%);
+  }
+  .poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .play {
+    position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px;
+    display: grid; place-items: center; border-radius: 50%;
+    background: var(--scr-scrim); border: 2px solid currentColor;
+    transition: transform 0.15s, background-color 0.15s;
+  }
+  .play svg { width: 24px; height: 24px; margin-left: 3px; fill: currentColor; }
+  .video-link:hover .play, .video-link:focus-visible .play { transform: scale(1.08); background: var(--scr-bg); }
+  .video :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  @media (max-width: 640px) {
+    .play { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
+  }
+</style>
+
+<script>
+  // Swap the poster for the player on a plain click. Modified clicks (new tab,
+  // new window) follow the link to YouTube as usual.
+  for (const box of document.querySelectorAll<HTMLElement>('.video[data-yt]')) {
+    const link = box.querySelector<HTMLAnchorElement>('.video-link');
+    link?.addEventListener('click', (ev) => {
+      if (ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      ev.preventDefault();
+      const player = document.createElement('iframe');
+      player.src = `https://www.youtube-nocookie.com/embed/${box.dataset['yt']}?autoplay=1&rel=0&playsinline=1`;
+      player.title = box.dataset['title'] ?? 'Video';
+      player.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      player.allowFullscreen = true;
+      player.referrerPolicy = 'strict-origin-when-cross-origin';
+      box.replaceChild(player, link);
+      player.focus();
+    });
+  }
+</script>

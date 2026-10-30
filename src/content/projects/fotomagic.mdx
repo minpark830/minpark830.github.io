@@ -1,0 +1,88 @@
+---
+title: FotoMagic photo editor
+when: Apr – Jun 2025
+order: 3
+placement: card
+roles: [software]
+card:
+  - A full-stack photo editor where users sign in, upload images, and adjust them with OpenCV on the server. Built by a team of five as the final project for Cal Poly's Introduction to Software Engineering.
+  - I set up the GitHub Actions workflows that lint and build every push and pull request to main and deploy the React front end and Flask API to Azure. I also wrote the Cypress end-to-end test and the ESLint and Prettier setup, worked on the image editor UI, and wrote most of the architecture docs.
+stack: React, Vite, Flask, MongoDB, Azure, GitHub Actions, Cypress, ESLint, Prettier
+media:
+  kind: figure
+  figure: fotomagic-arch
+  caption: How the app fits together, and the GitHub Actions pipeline that checks and deploys it.
+links:
+  - label: Source on GitHub
+    href: https://github.com/cwong239/307FinalProject
+  - label: Watch the demo
+    href: https://www.youtube.com/watch?v=qcPqslQKbzA
+writeup:
+  sheet: 3
+  description: A full-stack photo editor built by a team of five. I set up its continuous integration and deployment to Azure, wrote the end-to-end test, and configured linting and formatting.
+  facts:
+    - label: When
+      value: Apr – Jun 2025, CSC 307 at Cal Poly
+    - label: Team
+      value: Five students
+    - label: My part
+      value: CI/CD workflows, the end-to-end test, lint setup, editor UI (with a teammate), architecture docs
+    - label: Commits
+      value: 102 of the team's 265
+---
+
+import Figure from '../../components/Figure.astro';
+import CodeFile from '../../components/CodeFile.astro';
+import changeRange from '../excerpts/change-range-input.js?raw';
+
+<Figure
+  figure="fotomagic-arch"
+  label="Figure 1"
+  captionId="f-arch"
+  caption="How the app fits together, and the GitHub Actions pipeline that checks and deploys it."
+  transitionName="media-fotomagic"
+/>
+
+## The app
+
+FotoMagic is a photo editor in the browser. Users sign up and sign in, upload an image, adjust its brightness, contrast, gamma, and opacity, or turn it to grayscale, and the server does the processing with OpenCV.
+
+The React front end, built with Vite, talks to a Flask REST API that handles sign-in with JSON Web Tokens and does the image processing. User records live in MongoDB and image files in Azure Blob Storage.
+
+## The pipeline
+
+<Figure
+  figure="fotomagic-pipeline"
+  label="Figure 2"
+  captionId="f-pipeline"
+  wide
+  caption="The three workflows that run on every push and pull request to main."
+/>
+
+I set up three GitHub Actions workflows:
+
+- **CI checks** install the front end with `npm ci`, run ESLint and Prettier, and build for production, so every pull request shows whether it lints and builds before anyone reviews it.
+- **Front end** builds the React app and deploys it to Azure Static Web Apps. Each pull request gets its own preview environment, which closes when the pull request does.
+- **API** packages the Flask app and deploys it to Azure App Service. The deploy job signs in to Azure with OpenID Connect rather than a stored client secret.
+
+## The end-to-end test
+
+The Cypress test follows the project's core user story: as a user, I want to upload an image and apply basic effects without needing advanced tools. It signs in as a test user, uploads a fixture image on the editor page, moves the brightness, gamma, contrast, and opacity sliders, and checks each value.
+
+Range inputs need special handling. React tracks an input's value through its own property setter, so a test can't simply type into a slider. The custom command sets the value with the browser's native setter, then dispatches the input and change events that React listens for.
+
+<CodeFile
+  file="spec.cy.js"
+  note="excerpt"
+  href="https://github.com/cwong239/307FinalProject/blob/0daa72c3445e476b19a3816f3bd764cfac6b7bc1/frontend/cypress/e2e/spec.cy.js#L3-L18"
+  code={changeRange}
+  lang="js"
+/>
+
+## Code quality
+
+ESLint runs with the React, React Hooks, and Cypress plugins, and Prettier keeps formatting consistent. Both run in the CI checks, so a style problem fails the pull request instead of reaching review.
+
+## My part
+
+The three workflows, the Cypress test, and the ESLint and Prettier setup are mine, along with most of the architecture docs. I also built parts of the image editor page with a teammate. In all, 102 of the team's 265 commits.
