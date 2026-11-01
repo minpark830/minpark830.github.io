@@ -49,10 +49,8 @@ export const jobs: Job[] = [
     place: 'San Luis Obispo, CA',
     when: 'Sep 2024 – Jun 2025',
     bullets: [
-      'Co-developed leader-follower formation control (triangle and line formations) for a three-drone Crazyflie swarm that coordinates over peer-to-peer radio.',
-      "Wrote the leader drone's firmware app in C as FreeRTOS tasks, and a Python FastAPI ground server with a WebSocket link to each drone.",
-      'Developed EKF localization fusing optical-flow and time-of-flight range sensors on each drone.',
-      'Built failure detection and recovery that keeps the swarm robust as environmental and sensor conditions change.',
+      'Co-developed leader-follower formation control (triangle and line formations) for a three-drone Crazyflie swarm, flight-tested in the lab.',
+      "Wrote the leader drone's firmware apps in C as FreeRTOS tasks, including a peer-to-peer radio version that takes the ground station out of the loop, and a Python FastAPI ground server with a WebSocket link to each drone.",
     ],
     writeup: { href: '/projects/swarm/', label: 'Read the write-up on the swarm controller' },
   },
